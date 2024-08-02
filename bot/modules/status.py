@@ -503,9 +503,9 @@ async def send_repo_stats(_, query):
                  f"<b><i>Jet 🚀 Bot Repository</i></b>             \n"   \
                  f"<code>- Updated   : </code> {last_commit}\n"   \
                  f"<code>- Version   : </code> {version}    \n"   \
-                 f"<code>- Changelog : </code> {change_log} \n\n" \
-                 f"<b>{update_info}</b>" \
-                 f'\n\n<a href="https://t.me/JetMirror">𝑩𝒐𝒕 𝒃𝒚 🚀 𝑱𝒆𝒕-𝑴𝒊𝒓𝒓𝒐𝒓</a>'
+                 f"<code>- Changelog : </code> {change_log} \n" \
+                 f"<b>{update_info}</b>\n" \
+                 f'<a href="https://t.me/JetMirror">𝑩𝒐𝒕 𝒃𝒚 🚀 𝑱𝒆𝒕-𝑴𝒊𝒓𝒓𝒐𝒓</a>'
 
     buttons.ibutton(
         "Bot Stats", 
