@@ -309,6 +309,7 @@ async def get_readable_message(
                 f"\n⌑ <code>Speed  : </code>{task.seed_speed()}"
                 f"\n⌑ <code>Upload : </code>{task.uploaded_bytes()}"
                 f"\n⌑ <code>Ratio  : </code>{task.ratio()}"
+                f"\n⌑ <code>User   : </code>{user_tag}"
                 f"\n⌑ <code>Time   : </code>{task.seeding_time()}"
             )
         else:
