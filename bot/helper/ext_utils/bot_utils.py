@@ -447,8 +447,8 @@ async def set_commands(client):
             BotCommand(f'{BotCommands.StatusCommand[0]}', f'or /{BotCommands.StatusCommand[1]} Get mirror status message'),
             BotCommand(f'{BotCommands.StatsCommand[0]}', f'{BotCommands.StatsCommand[1]} Check bot stats'),
             BotCommand(f'{BotCommands.UserSetCommand}', 'Users settings'),
-            # BotCommand(f'{BotCommands.BotSetCommand}', 'Bot Settings'),
+            BotCommand(f'{BotCommands.BotSetCommand}', 'Bot Settings'),
             BotCommand(f'{BotCommands.LogCommand}', 'Bot Logs'),
-            # BotCommand(f'{BotCommands.RestartCommand}', 'Restart the bot'),
+            BotCommand(f'{BotCommands.RestartCommand[0]}', 'Restart the bot'),
             BotCommand(f'{BotCommands.HelpCommand}', 'Get detailed help'),
         ])
