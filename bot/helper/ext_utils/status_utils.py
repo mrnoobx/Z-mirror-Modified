@@ -327,20 +327,20 @@ async def get_readable_message(
         else:
             msg = f"No Active {status} Tasks!\n\n"
     buttons = ButtonMaker()
-    if is_user:
-        buttons.ibutton(
-            "ʀᴇғʀᴇsʜ",
-            f"status {sid} ref",
-            position="header"
-        )
+    # if is_user:
+    #     buttons.ibutton(
+    #         "Refresh",
+    #         f"status {sid} ref",
+    #         position="header"
+    #     )
     if not is_user:
         buttons.ibutton(
-            "ᴛᴀsᴋs\nɪɴғᴏ",
+            "Task Info",
             f"status {sid} ov",
             position="footer"
         )
         buttons.ibutton(
-            "sʏsᴛᴇᴍ\nɪɴғᴏ",
+            "System Info",
             f"status {sid} stats",
             position="footer"
         )
@@ -352,7 +352,7 @@ async def get_readable_message(
             position="header"
         )
         buttons.ibutton(
-            f"ᴘᴀɢᴇs\n{page_no}/{pages}",
+            f"Pages {page_no}/{pages}",
             f"status {sid} ref",
             position="header"
         )
@@ -389,6 +389,11 @@ async def get_readable_message(
                     label,
                     f"status {sid} st {status_value}"
                 )
+    buttons.ibutton(
+        "Refresh",
+        f"status {sid} ref",
+        position="header"
+    )
     button = buttons.build_menu(8)
     msg += (
         f"<b>CPU</b>: {cpu_percent()}% | "
