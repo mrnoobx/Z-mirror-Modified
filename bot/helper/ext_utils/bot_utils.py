@@ -395,7 +395,7 @@ async def checking_access(user_id, button=None):
         user_data[user_id].update(data)
         if button is None:
             button = ButtonMaker()
-        button.ubutton('Get New Token', short_url(f'https://telegram.me/{bot_name}?start={token}'))
+        button.ubutton('Get New Token', short_url(f'https://redirect.jet-mirror.in/{bot_name}/{token}'))
         tmsg = 'Your <b>Token</b> is expired. Get a new one.'
         tmsg += f'\n<b>Token Validity</b>: {get_readable_time(config_dict["TOKEN_TIMEOUT"])}'
         return tmsg, button
