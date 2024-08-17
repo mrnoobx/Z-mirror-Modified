@@ -12,6 +12,7 @@ from logging import (
     getLogger,
     ERROR,
 )
+from sys import exit
 from os import path, environ, remove
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi

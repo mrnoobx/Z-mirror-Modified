@@ -8,7 +8,6 @@ from aioshutil import rmtree
 from asyncio import (
     create_subprocess_exec,
     create_subprocess_shell,
-    sleep,
     gather,
     wait_for,
 )
@@ -19,16 +18,15 @@ from os import (
     environ,
     getcwd
 )
-from pyrogram.filters import (
-    command,
-    regex,
-    create
-)
+from pyrogram import filters
 from pyrogram.handlers import (
     MessageHandler,
     CallbackQueryHandler
 )
-from time import time
+from pyrogram.errors import (
+    ListenerTimeout,
+    ListenerStopped
+)
 
 from bot import (
     aria2,
@@ -58,7 +56,6 @@ from bot.helper.ext_utils.bot_utils import (
     set_commands,
     setInterval,
     sync_to_async,
-    new_thread,
     retry_function,
 )
 from bot.helper.ext_utils.db_handler import DbManager
@@ -80,15 +77,14 @@ from bot.modules.torrent_search import initiate_search_tools
 
 START = 0
 STATE = "view"
-handler_dict = {}
 default_values = {
     "DOWNLOAD_DIR": "/usr/src/app/downloads/",
     "LEECH_SPLIT_SIZE": MAX_SPLIT_SIZE,
     "RSS_DELAY": 600,
-    "STATUS_UPDATE_INTERVAL": 15,
+    "STATUS_UPDATE_INTERVAL": 10,
     "SEARCH_LIMIT": 0,
-    "UPSTREAM_REPO": "https://gitlab.com/Dawn-India/Z-Mirror",
-    "UPSTREAM_BRANCH": "upstream",
+    "UPSTREAM_REPO": "https://gitlab.com/Hrishi2861/Z-Mirror-Modified",
+    "UPSTREAM_BRANCH": "upstream_new",
     "DEFAULT_UPLOAD": "gd",
 }
 
@@ -114,14 +110,15 @@ async def get_buttons(key=None, edit_type=None):
         )
         buttons.ibutton(
             "Close",
-            "botset close"
+            "botset close",
+            position="footer"
         )
-        msg = "Bot Settings:"
+        msg = "<b>Bot Settings</b>\n\nPress any button to view or edit settings."
     elif edit_type is not None:
         if edit_type == "botvar":
             msg = ""
             buttons.ibutton(
-                "Back",
+                "Back ⬅️",
                 "botset var"
             )
             if key not in [
@@ -135,7 +132,7 @@ async def get_buttons(key=None, edit_type=None):
                     f"botset resetvar {key}"
                 )
             buttons.ibutton(
-                "Close",
+                "Close ❌",
                 "botset close"
             )
             if key in [
@@ -154,7 +151,7 @@ async def get_buttons(key=None, edit_type=None):
             msg += f"Send a valid value for {key}. Current value is '{config_dict[key]}'. Timeout: 60 sec"
         elif edit_type == "ariavar":
             buttons.ibutton(
-                "Back",
+                "Back ⬅️",
                 "botset aria"
             )
             if key != "newkey":
@@ -167,7 +164,7 @@ async def get_buttons(key=None, edit_type=None):
                     f"botset emptyaria {key}"
                 )
             buttons.ibutton(
-                "Close",
+                "Close ❌",
                 "botset close"
             )
             msg = (
@@ -177,7 +174,7 @@ async def get_buttons(key=None, edit_type=None):
             )
         elif edit_type == "qbitvar":
             buttons.ibutton(
-                "Back",
+                "Back ⬅️",
                 "botset qbit"
             )
             buttons.ibutton(
@@ -185,7 +182,7 @@ async def get_buttons(key=None, edit_type=None):
                 f"botset emptyqbit {key}"
             )
             buttons.ibutton(
-                "Close",
+                "Close ❌",
                 "botset close"
             )
             msg = f"Send a valid value for {key}. Current value is '{qbit_options[key]}'. Timeout: 60 sec"
@@ -197,20 +194,20 @@ async def get_buttons(key=None, edit_type=None):
             )
         if STATE == "view":
             buttons.ibutton(
-                "Edit",
+                "Edit 📝",
                 "botset edit var"
             )
         else:
             buttons.ibutton(
-                "View",
+                "View 👀",
                 "botset view var"
             )
         buttons.ibutton(
-            "Back",
+            "Back ⬅️",
             "botset back"
         )
         buttons.ibutton(
-            "Close",
+            "Close ❌",
             "botset close"
         )
         for x in range(
@@ -226,15 +223,16 @@ async def get_buttons(key=None, edit_type=None):
         msg = f"Config Variables | Page: {int(START / 10)} | State: {STATE}"
     elif key == "private":
         buttons.ibutton(
-            "Back",
+            "Back ⬅️",
             "botset back"
         )
         buttons.ibutton(
-            "Close",
+            "Close ❌",
             "botset close"
         )
         msg = """
-Send private file: config.env, token.pickle, rclone.conf, accounts.zip, list_drives.txt, cookies.txt, terabox.txt, .netrc or any other private file!
+Send private file: config.env, token.pickle, rclone.conf, accounts.zip,
+list_drives.txt, cookies.txt, .netrc or any other private file!
 
 To delete private file send only the file name as text message.
 Note: Changing .netrc will not take effect for aria2c until restart.
@@ -249,24 +247,24 @@ Timeout: 60 sec.
             )
         if STATE == "view":
             buttons.ibutton(
-                "Edit",
+                "Edit 📝",
                 "botset edit aria"
             )
         else:
             buttons.ibutton(
-                "View",
+                "View 👀",
                 "botset view aria"
             )
         buttons.ibutton(
-            "Add new key",
+            "Add New Key",
             "botset ariavar newkey"
         )
         buttons.ibutton(
-            "Back",
+            "Back ⬅️",
             "botset back"
         )
         buttons.ibutton(
-            "Close",
+            "Close ❌",
             "botset close"
         )
         for x in range(
@@ -288,24 +286,24 @@ Timeout: 60 sec.
             )
         if STATE == "view":
             buttons.ibutton(
-                "Edit",
+                "Edit 📝",
                 "botset edit qbit"
             )
         else:
             buttons.ibutton(
-                "View",
+                "View 👀",
                 "botset view qbit"
             )
         buttons.ibutton(
-            "Sync Qbittorrent",
+            "Qbit Sync",
             "botset syncqbit"
         )
         buttons.ibutton(
-            "Back",
+            "Back ⬅️",
             "botset back"
         )
         buttons.ibutton(
-            "Close",
+            "Close ❌",
             "botset close"
         )
         for x in range(
@@ -320,10 +318,7 @@ Timeout: 60 sec.
             )
         msg = f"Qbittorrent Options | Page: {int(START / 10)} | State: {STATE}"
 
-    button = (
-        buttons.build_menu(1)
-        if key is None
-        else buttons.build_menu(2))
+    button = buttons.build_menu(1)
     return (
         msg,
         button
@@ -345,8 +340,7 @@ async def update_buttons(message, key=None, edit_type=None):
     )
 
 
-async def edit_variable(client, message, pre_message, key):
-    handler_dict[message.chat.id] = False
+async def edit_variable(message, pre_message, key):
     value = message.text
     if value.lower() == "true":
         value = True
@@ -372,7 +366,10 @@ async def edit_variable(client, message, pre_message, key):
             len(task_dict) != 0
             and (st := Intervals["status"])
         ):
-            for cid, intvl in list(st.items()):
+            for (
+                cid,
+                intvl
+            ) in list(st.items()):
                 intvl.cancel()
                 Intervals["status"][cid] = setInterval(
                     value,
@@ -483,8 +480,7 @@ async def edit_variable(client, message, pre_message, key):
         await set_commands(client)
 
 
-async def edit_aria(_, message, pre_message, key):
-    handler_dict[message.chat.id] = False
+async def edit_aria(message, pre_message, key):
     value = message.text
     if key == "newkey":
         key, value = [
@@ -529,8 +525,7 @@ async def edit_aria(_, message, pre_message, key):
         )
 
 
-async def edit_qbit(_, message, pre_message, key):
-    handler_dict[message.chat.id] = False
+async def edit_qbit(message, pre_message, key):
     value = message.text
     if value.lower() == "true":
         value = True
@@ -557,8 +552,7 @@ async def edit_qbit(_, message, pre_message, key):
         )
 
 
-async def update_private_file(_, message, pre_message):
-    handler_dict[message.chat.id] = False
+async def update_private_file(message, pre_message):
     if not message.media and (file_name := message.text):
         fn = file_name.rsplit(
             ".zip",
@@ -731,11 +725,11 @@ async def update_private_file(_, message, pre_message):
             buttons = ButtonMaker()
             msg = "Push to UPSTREAM_REPO ?"
             buttons.ibutton(
-                "Yes!",
+                "ʏᴇꜱ!",
                 f"botset push {file_name}"
             )
             buttons.ibutton(
-                "No",
+                "ɴᴏ",
                 "botset close"
             )
             await sendMessage(
@@ -754,46 +748,26 @@ async def update_private_file(_, message, pre_message):
         await remove("accounts.zip")
 
 
-async def event_handler(client, query, pfunc, rfunc, document=False):
-    chat_id = query.message.chat.id
-    handler_dict[chat_id] = True
-    start_time = time()
-
-    async def event_filter(_, __, event):
-        user = (
-            event.from_user or
-            event.sender_chat
-        )
-        return bool(
-            user.id == query.from_user.id
-            and event.chat.id == chat_id
-            and (
-                event.text or
-                event.document and
-                document
-            )
-        )
-
-    handler = client.add_handler(
-        MessageHandler(
-            pfunc,
-            filters=create(event_filter)
-        ),
-        group=-1
+async def event_handler(client, query, document=False):
+    event_filter = (
+        filters.text | filters.document
+        if document
+        else filters.text
     )
-    while handler_dict[chat_id]:
-        await sleep(0.5)
-        if time() - start_time > 60:
-            handler_dict[chat_id] = False
-            await rfunc()
-    client.remove_handler(*handler)
+    return await client.listen(
+        chat_id=query.message.chat.id,
+        user_id=query.from_user.id,
+        filters=event_filter,
+        timeout=60,
+    )
 
-
-@new_thread
 async def edit_bot_settings(client, query):
-    data = query.data.split()
     message = query.message
-    handler_dict[message.chat.id] = False
+    await client.stop_listening(
+        chat_id=message.chat.id,
+        user_id=query.from_user.id
+    )
+    data = query.data.split()
     if data[1] == "close":
         await query.answer()
         await deleteMessage(message.reply_to_message)
@@ -981,21 +955,21 @@ async def edit_bot_settings(client, query):
             message,
             data[1]
         )
-        pfunc = partial(
-            update_private_file,
-            pre_message=message
-        )
-        rfunc = partial(
-            update_buttons,
-            message
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc,
-            rfunc,
-            True
-        )
+        try:
+            event = await event_handler(
+                client,
+                query,
+                True
+            )
+        except ListenerTimeout:
+            await update_buttons(message)
+        except ListenerStopped:
+            pass
+        else:
+            await update_private_file(
+                event,
+                message
+            )
     elif (
         data[1] == "botvar"
         and STATE == "edit"
@@ -1006,22 +980,24 @@ async def edit_bot_settings(client, query):
             data[2],
             data[1]
         )
-        pfunc = partial(
-            edit_variable,
-            pre_message=message,
-            key=data[2]
-        )
-        rfunc = partial(
-            update_buttons,
-            message,
-            "var"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc,
-            rfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_buttons(
+                message,
+                "var"
+            )
+        except ListenerStopped:
+            pass
+        else:
+            await edit_variable(
+                event,
+                message,
+                data[2]
+            )
     elif (
         data[1] == "botvar"
         and STATE == "view"
@@ -1080,22 +1056,24 @@ async def edit_bot_settings(client, query):
             data[2],
             data[1]
         )
-        pfunc = partial(
-            edit_aria,
-            pre_message=message,
-            key=data[2]
-        )
-        rfunc = partial(
-            update_buttons,
-            message,
-            "aria"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc,
-            rfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_buttons(
+                message,
+                "aria"
+            )
+        except ListenerStopped:
+            pass
+        else:
+            await edit_aria(
+                event,
+                message,
+                data[2]
+            )
     elif (
         data[1] == "ariavar"
         and STATE == "view"
@@ -1126,22 +1104,24 @@ async def edit_bot_settings(client, query):
             data[2],
             data[1]
         )
-        pfunc = partial(
-            edit_qbit,
-            pre_message=message,
-            key=data[2]
-        )
-        rfunc = partial(
-            update_buttons,
-            message,
-            "qbit"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc,
-            rfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_buttons(
+                message,
+                "qbit"
+            )
+        except ListenerStopped:
+            pass
+        else:
+            await edit_qbit(
+                event,
+                message,
+                data[2]
+            )
     elif (
         data[1] == "qbitvar"
         and STATE == "view"
@@ -1207,9 +1187,15 @@ async def edit_bot_settings(client, query):
         await deleteMessage(message)
 
 
-async def bot_settings(_, message):
-    handler_dict[message.chat.id] = False
-    msg, button = await get_buttons()
+async def bot_settings(client, message):
+    await client.stop_listening(
+        chat_id=message.chat.id,
+        user_id=message.from_user.id
+    )
+    (
+        msg,
+        button
+    ) = await get_buttons()
     globals()["START"] = 0
     await sendMessage(
         message,
@@ -1805,6 +1791,15 @@ async def load_config():
     else:
         TOKEN_TIMEOUT = ""
 
+    MINIMUM_DURATOIN = environ.get(
+        "MINIMUM_DURATOIN",
+        ""
+    )
+    if MINIMUM_DURATOIN.isdigit():
+        MINIMUM_DURATOIN = int(MINIMUM_DURATOIN)
+    else:
+        MINIMUM_DURATOIN = ""
+
     FSUB_IDS = environ.get(
         "FSUB_IDS",
         ""
@@ -2064,6 +2059,7 @@ async def load_config():
             "CLONE_LIMIT": CLONE_LIMIT,
             "RCLONE_LIMIT": RCLONE_LIMIT,
             "MEGA_LIMIT": MEGA_LIMIT,
+            "MINIMUM_DURATOIN": MINIMUM_DURATOIN,
             "LEECH_LIMIT": LEECH_LIMIT,
             "SET_COMMANDS": SET_COMMANDS,
             "MEGA_EMAIL": MEGA_EMAIL,
@@ -2137,15 +2133,16 @@ async def load_config():
 bot.add_handler( # type: ignore
     MessageHandler(
         bot_settings, 
-        filters=command(
-            BotCommands.BotSetCommand
+        filters=filters.command(
+            BotCommands.BotSetCommand,
+            case_sensitive=True
         ) & CustomFilters.sudo
     )
 )
 bot.add_handler( # type: ignore
     CallbackQueryHandler(
         edit_bot_settings,
-        filters=regex(
+        filters=filters.regex(
             "^botset"
         ) & CustomFilters.sudo
     )

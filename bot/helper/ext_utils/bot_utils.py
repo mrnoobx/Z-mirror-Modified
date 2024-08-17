@@ -235,7 +235,7 @@ async def get_telegraph_list(telegraph_content):
     path = [
         (
             await telegraph.create_page(
-                title="Z-Mirror Drive Search",
+                title="Jet-Mirror Drive Search",
                 content=content
             )
         )["path"]
@@ -414,7 +414,7 @@ async def sync_to_async(func, *args, wait=True, **kwargs):
         **kwargs
     )
     future = bot_loop.run_in_executor(
-        THREADPOOL,
+        None,
         pfunc
     )
     return (

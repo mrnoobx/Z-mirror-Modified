@@ -8,6 +8,7 @@ from asyncio import (
     Lock,
     get_event_loop
 )
+from concurrent.futures import ThreadPoolExecutor
 from dotenv import (
     load_dotenv,
     dotenv_values
@@ -29,6 +30,7 @@ from os import (
     environ,
     getcwd
 )
+from sys import exit
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pyrogram import Client as tgClient
@@ -59,6 +61,8 @@ getLogger("pyrogram").setLevel(ERROR)
 
 botStartTime = time()
 bot_loop = get_event_loop()
+THREADPOOL = ThreadPoolExecutor(max_workers=99999)
+bot_loop.set_default_executor(THREADPOOL)
 
 basicConfig(
     format="%(levelname)s | From %(name)s -> %(module)s line no: %(lineno)d | %(message)s",
@@ -781,6 +785,16 @@ if TOKEN_TIMEOUT.isdigit():
 else:
     TOKEN_TIMEOUT = ""
 
+MINIMUM_DURATOIN = environ.get(
+    "MINIMUM_DURATOIN",
+    ""
+)
+if MINIMUM_DURATOIN.isdigit():
+    MINIMUM_DURATOIN = int(MINIMUM_DURATOIN)
+else:
+    MINIMUM_DURATOIN = ""
+
+
 FSUB_IDS = environ.get(
     "FSUB_IDS",
     ""
@@ -994,6 +1008,7 @@ config_dict = {
     "MEGA_PASSWORD": MEGA_PASSWORD,
     "MIXED_LEECH": MIXED_LEECH,
     "MEGA_LIMIT": MEGA_LIMIT,
+    "MINIMUM_DURATOIN": MINIMUM_DURATOIN,
     "NAME_SUBSTITUTE": NAME_SUBSTITUTE,
     "PLAYLIST_LIMIT": PLAYLIST_LIMIT,
     "OWNER_ID": OWNER_ID,
@@ -1193,6 +1208,7 @@ bot = tgClient(
     app_version="@Z_Mirror Session",
     device_model="@Z_Mirror Bot",
     system_version="@Z_Mirror Server",
+    workers=99999,
 ).start()
 
 BASE += ("oAtiUyppVYRQkuWg8DG2p")

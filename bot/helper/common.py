@@ -233,13 +233,11 @@ class TaskConfig:
     async def isTokenExists(self, path, status):
         if is_rclone_path(path):
             config_path = self.getConfigPath(path)
-
             if (
                 config_path != "rclone.conf"
                 and status == "up"
             ):
                 self.privateLink = True
-
             if not await aiopath.exists(config_path):
                 raise ValueError(f"Rclone Config: {config_path} not Exists!")
 
@@ -398,6 +396,11 @@ class TaskConfig:
         ]:
             if (
                 not self.isYtDlp
+                and (
+                    is_gdrive_id(self.link)
+                    or is_rclone_path(self.link)
+                    or is_gdrive_link(self.link)
+                )
             ):
                 await self.isTokenExists(
                     self.link,
@@ -525,6 +528,8 @@ class TaskConfig:
                 ):
                     raise ValueError("You must use the same config to clone!")
         else:
+            if self.message.chat.type != self.message.chat.type.SUPERGROUP: # type: ignore
+                raise ValueError("Leech is not allowed in private!\nUse me in a supergroup!")
             self.upDest = (
                 self.upDest
                 or self.userDict.get("leech_dest")
@@ -589,7 +594,8 @@ class TaskConfig:
                         or not member.privileges.can_post_messages 
                     ):
                         raise ValueError(
-                            "I don't have enough privileges in this chat!"
+                            "I don't have enough permissions in the <b>leech destination</b>!\n"
+                            "Allow me <b>post messages</b> and <b>manage chat</b> permissions!"
                         )
                 else:
                     try:
@@ -601,46 +607,36 @@ class TaskConfig:
                         raise ValueError("Start me in DM and try again!")
 
                 if config_dict["LOG_CHAT_ID"]:
-                        try:
-                            log_chat = await self.client.get_chat(config_dict["LOG_CHAT_ID"]) # type: ignore
-                        except:
-                            raise ValueError("First add me in LOG_CHAT_ID!")
-                        if log_chat.type.name not in [
-                            "SUPERGROUP",
-                            "CHANNEL"
-                        ]:
-                            raise ValueError(
-                                "LOG_CHAT_ID must be a supergroup or a channel!"
-                            )
-                        member = await log_chat.get_member(uploader_id)
-                        if (
-                            not member.privileges.can_manage_chat
-                            or not member.privileges.can_post_messages 
-                        ):
-                            raise ValueError(
-                                "I don't have enough permission in LOG_CHAT_ID!"
-                            )
+                    try:
+                        log_chat = await self.client.get_chat(config_dict["LOG_CHAT_ID"]) # type: ignore
+                    except:
+                        raise ValueError("First add me in LOG_CHAT_ID!")
+                    if log_chat.type.name != "CHANNEL":
+                        raise ValueError(
+                            "LOG_CHAT_ID must be a channel!"
+                        )
+                    member = await log_chat.get_member(uploader_id)
+                    if not member.privileges.can_post_messages:
+                        raise ValueError(
+                            "I don't have enough permission in LOG_CHAT_ID!"
+                            "Allow me 'post messages' permissions!"
+                        )
 
                 if config_dict["DUMP_CHAT_ID"]:
-                        try:
-                            dump_chat = await self.client.get_chat(config_dict["DUMP_CHAT_ID"]) # type: ignore
-                        except:
-                            raise ValueError("First add me in DUMP_CHAT_ID!")
-                        if dump_chat.type.name not in [
-                            "SUPERGROUP",
-                            "CHANNEL"
-                        ]:
-                            raise ValueError(
-                                "DUMP_CHAT_ID must be a supergroup or a channel!"
-                            )
-                        member = await dump_chat.get_member(uploader_id)
-                        if (
-                            not member.privileges.can_manage_chat
-                            or not member.privileges.can_post_messages 
-                        ):
-                            raise ValueError(
-                                "I don't have enough permission in DUMP_CHAT_ID!"
-                            )
+                    try:
+                        dump_chat = await self.client.get_chat(config_dict["DUMP_CHAT_ID"]) # type: ignore
+                    except:
+                        raise ValueError("First add me in DUMP_CHAT_ID!")
+                    if dump_chat.type.name != "CHANNEL":
+                        raise ValueError(
+                            "DUMP_CHAT_ID must be a channel!"
+                        )
+                    member = await dump_chat.get_member(uploader_id)
+                    if not member.privileges.can_post_messages:
+                        raise ValueError(
+                            "I don't have enough permission in DUMP_CHAT_ID!"
+                            "Allow me 'post messages' permissions!"
+                        )
 
             if self.splitSize:
                 if self.splitSize.isdigit(): # type: ignore

@@ -136,12 +136,15 @@ async def _avg_speed_check(tor):
             start_time = time()
             total_speed = 0
             count = 0
-            while time() - start_time < 600:
+            while time() - start_time < 1800:
                 live_dl = await sync_to_async(
                     qbittorrent_client.torrents_info,
                     torrent_hashes=tor.hash
                 )
-                dl_speed = live_dl[0].dlspeed
+                try:
+                    dl_speed = live_dl[0].dlspeed
+                except:
+                    dl_speed = 0
                 total_speed += dl_speed
                 count += 1
                 await sleep(10)

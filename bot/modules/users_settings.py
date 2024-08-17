@@ -1,26 +1,24 @@
+from asyncio import gather
 from aiofiles.os import (
     remove,
     path as aiopath,
     makedirs
 )
-from asyncio import sleep
-from functools import partial
 from html import escape
 from io import BytesIO
 from math import ceil
 from os import getcwd, path as os_path
-from pyrogram.filters import (
-    command,
-    regex,
-    create
-)
+from pyrogram import filters
 from pyrogram.handlers import (
     MessageHandler,
     CallbackQueryHandler
 )
 from pyrogram.types import InputMediaPhoto
 from re import search as re_search
-from time import time
+from pyrogram.errors import (
+    ListenerTimeout,
+    ListenerStopped
+)
 
 from bot import (
     bot,
@@ -32,10 +30,7 @@ from bot import (
     MAX_SPLIT_SIZE,
     GLOBAL_EXTENSION_FILTER,
 )
-from bot.helper.ext_utils.bot_utils import (
-    update_user_ldata,
-    new_thread,
-)
+from bot.helper.ext_utils.bot_utils import update_user_ldata
 from bot.helper.ext_utils.db_handler import DbManager
 from bot.helper.ext_utils.media_utils import createThumb
 from bot.helper.ext_utils.status_utils import get_readable_file_size
@@ -51,8 +46,6 @@ from bot.helper.telegram_helper.message_utils import (
     deleteMessage,
 )
 from bot.helper.z_utils import def_media
-
-handler_dict = {}
 
 
 async def get_user_settings(from_user):
@@ -263,7 +256,7 @@ async def get_user_settings(from_user):
         else "Not Added"
     )
     buttons.ibutton(
-        "Upload Paths",
+        "Upload Tools",
         f"userset {user_id} upload_paths"
     )
 
@@ -285,12 +278,12 @@ async def get_user_settings(from_user):
         else "Rclone"
     )
     buttons.ibutton(
-        f"Upload using {dub}",
+        f"Upload Using {dub}",
         f"userset {user_id} {default_upload}"
     )
 
     buttons.ibutton(
-        "Extension Filter",
+        "Extention Filter",
         f"userset {user_id} ex_ex"
     )
     ex_ex = (
@@ -316,7 +309,7 @@ async def get_user_settings(from_user):
     )
 
     buttons.ibutton(
-        "YT-DLP Options",
+        "Yt-Dlp Options",
         f"userset {user_id} yto"
     )
     if user_dict.get(
@@ -334,13 +327,14 @@ async def get_user_settings(from_user):
 
     if user_dict:
         buttons.ibutton(
-            "Reset All",
+            "Reset All Changes",
             f"userset {user_id} reset"
         )
 
     buttons.ibutton(
         "Close",
-        f"userset {user_id} close"
+        f"userset {user_id} close",
+        position="footer"
     )
 
     text = f"""
@@ -400,13 +394,15 @@ async def update_user_settings(query):
     )
 
 
-@new_thread
-async def user_settings(_, message):
+async def user_settings(client, message):
+    await client.stop_listening(
+        chat_id=message.chat.id,
+        user_id=message.from_user.id
+    )
     from_user = message.from_user
     if not from_user:
         from_user = await anno_checker(message)
     user_id = from_user.id
-    handler_dict[user_id] = False
     msg, button = await get_user_settings(from_user)
     tpath = "https://graph.org/JetMirror-07-24-2"
     media = (
@@ -425,9 +421,8 @@ async def user_settings(_, message):
     )
 
 
-async def set_thumb(_, message, pre_event):
+async def set_thumb(message):
     user_id = message.from_user.id
-    handler_dict[user_id] = False
     des_dir = await createThumb(
         message,
         user_id
@@ -438,7 +433,6 @@ async def set_thumb(_, message, pre_event):
         des_dir
     )
     await deleteMessage(message)
-    await update_user_settings(pre_event)
     if DATABASE_URL:
         await DbManager().update_user_doc(
             user_id,
@@ -447,9 +441,8 @@ async def set_thumb(_, message, pre_event):
         )
 
 
-async def add_rclone(_, message, pre_event):
+async def add_rclone(message):
     user_id = message.from_user.id
-    handler_dict[user_id] = False
     rpath = f"{getcwd()}/rclone/"
     await makedirs(rpath, exist_ok=True)
     des_dir = f"{rpath}{user_id}.conf"
@@ -460,7 +453,6 @@ async def add_rclone(_, message, pre_event):
         f"rclone/{user_id}.conf"
     )
     await deleteMessage(message)
-    await update_user_settings(pre_event)
     if DATABASE_URL:
         await DbManager().update_user_doc(
             user_id,
@@ -469,9 +461,8 @@ async def add_rclone(_, message, pre_event):
         )
 
 
-async def add_token_pickle(_, message, pre_event):
+async def add_token_pickle(message):
     user_id = message.from_user.id
-    handler_dict[user_id] = False
     tpath = f"{getcwd()}/tokens/"
     await makedirs(tpath, exist_ok=True)
     des_dir = f"{tpath}{user_id}.pickle"
@@ -482,7 +473,6 @@ async def add_token_pickle(_, message, pre_event):
         f"tokens/{user_id}.pickle"
     )
     await deleteMessage(message)
-    await update_user_settings(pre_event)
     if DATABASE_URL:
         await DbManager().update_user_doc(
             user_id,
@@ -491,9 +481,8 @@ async def add_token_pickle(_, message, pre_event):
         )
 
 
-async def delete_path(_, message, pre_event):
+async def delete_path(message):
     user_id = message.from_user.id
-    handler_dict[user_id] = False
     user_dict = user_data.get(user_id, {})
     names = message.text.split()
     for name in names:
@@ -506,7 +495,6 @@ async def delete_path(_, message, pre_event):
         new_value
     )
     await deleteMessage(message)
-    await update_user_settings(pre_event)
     if DATABASE_URL:
         await DbManager().update_user_doc(
             user_id,
@@ -515,9 +503,8 @@ async def delete_path(_, message, pre_event):
         )
 
 
-async def set_option(_, message, pre_event, option):
+async def set_option(message, option):
     user_id = message.from_user.id
-    handler_dict[user_id] = False
     value = message.text
     if option == "split_size":
         if re_search(r"[a-zA-Z]", value):
@@ -529,7 +516,6 @@ async def set_option(_, message, pre_event, option):
                 message,
                 smsg
             )
-            await update_user_settings(pre_event)
             return
         value = min(
             ceil(float(value) * 1024 ** 3),
@@ -560,7 +546,6 @@ async def set_option(_, message, pre_event, option):
                     message,
                     smsg
                 )
-                await update_user_settings(pre_event)
                 return
             (
                 name,
@@ -574,61 +559,42 @@ async def set_option(_, message, pre_event, option):
         value
     )
     await deleteMessage(message)
-    await update_user_settings(pre_event)
     if DATABASE_URL:
         await DbManager().update_user_data(user_id)
 
 
-async def event_handler(client, query, pfunc, photo=False, document=False):
-    user_id = query.from_user.id
-    handler_dict[user_id] = True
-    start_time = time()
-
-    async def event_filter(_, __, event):
-        if photo:
-            mtype = event.photo
-        elif document:
-            mtype = event.document
-        else:
-            mtype = event.text
-        user = (
-            event.from_user or
-            event.sender_chat
-        )
-        return bool(
-            user.id == user_id
-            and event.chat.id == query.message.chat.id
-            and mtype
-        )
-
-    handler = client.add_handler(
-        MessageHandler(
-            pfunc,
-            filters=create(event_filter)
-        ),
-        group=-1
+async def event_handler(client, query, photo=False, document=False):
+    if photo:
+        event_filter = filters.photo
+    elif document:
+        event_filter = filters.document
+    else:
+        event_filter = filters.text
+    return await client.listen(
+        chat_id=query.message.chat.id,
+        user_id=query.from_user.id,
+        filters=event_filter,
+        timeout=60,
     )
 
-    while handler_dict[user_id]:
-        await sleep(0.5)
-        if time() - start_time > 60:
-            handler_dict[user_id] = False
-            await update_user_settings(query)
-    client.remove_handler(*handler)
 
-
-@new_thread
 async def edit_user_settings(client, query):
     from_user = query.from_user
     user_id = from_user.id
     name = from_user.mention
     message = query.message
     data = query.data.split()
-    handler_dict[user_id] = False
     thumb_path = f"Thumbnails/{user_id}.jpg"
     rclone_conf = f"rclone/{user_id}.conf"
     token_pickle = f"tokens/{user_id}.pickle"
-    user_dict = user_data.get(user_id, {})
+    user_dict = user_data.get(
+        user_id,
+        {}
+    )
+    await client.stop_listening(
+        chat_id=message.chat.id,
+        user_id=query.from_user.id
+    )
     if user_id != int(data[1]):
         await query.answer(
             "Not Yours!",
@@ -688,9 +654,18 @@ async def edit_user_settings(client, query):
         "lsuffix",
         "lcapfont",
         "index_url",
-        "excluded_extensions",
         "name_sub",
     ]:
+        await query.answer()
+        update_user_ldata(
+            user_id,
+            data[2],
+            f"{GLOBAL_EXTENSION_FILTER}"
+        )
+        await update_user_settings(query)
+        if DATABASE_URL:
+            await DbManager().update_user_data(user_id)
+    elif data[2] == "excluded_extensions":
         await query.answer()
         update_user_ldata(
             user_id,
@@ -726,7 +701,7 @@ async def edit_user_settings(client, query):
             else "Not Exists"
         )
         buttons.ibutton(
-            "Leech Split Size",
+            "Split Size",
             f"userset {user_id} lss"
         )
         if user_dict.get(
@@ -754,7 +729,7 @@ async def edit_user_settings(client, query):
         else:
             leech_dest = "None"
         buttons.ibutton(
-            "Leech Prefix",
+            "Prefix",
             f"userset {user_id} leech_prefix"
         )
         if user_dict.get(
@@ -769,7 +744,7 @@ async def edit_user_settings(client, query):
         else:
             lprefix = "None"
         buttons.ibutton(
-            "Leech Suffix",
+            "Suffix",
             f"userset {user_id} leech_suffix"
         )
         if user_dict.get(
@@ -784,7 +759,7 @@ async def edit_user_settings(client, query):
         else:
             lsuffix = "None"
         buttons.ibutton(
-            "Leech Caption Font",
+            "Caption Font",
             f"userset {user_id} leech_cap_font"
         )
         if user_dict.get(
@@ -808,13 +783,13 @@ async def edit_user_settings(client, query):
         ):
             ltype = "DOCUMENT"
             buttons.ibutton(
-                "Send As Media",
+                "Upload as Media",
                 f"userset {user_id} as_doc false"
             )
         else:
             ltype = "MEDIA"
             buttons.ibutton(
-                "Send As Document",
+                "Upload As Document",
                 f"userset {user_id} as_doc true"
             )
         if (
@@ -903,11 +878,13 @@ async def edit_user_settings(client, query):
 
         buttons.ibutton(
             "Back",
-            f"userset {user_id} back"
+            f"userset {user_id} back",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         text = f"""
 <b><u>Leech Settings for {name}</u></b>
@@ -943,11 +920,13 @@ async def edit_user_settings(client, query):
         )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} back"
+            f"userset {user_id} back",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         rccmsg = (
             "Exists"
@@ -978,7 +957,7 @@ async def edit_user_settings(client, query):
         await query.answer()
         buttons = ButtonMaker()
         buttons.ibutton(
-            "token.pickle",
+            "Upload  Token Pickle",
             f"userset {user_id} token"
         )
         buttons.ibutton(
@@ -1010,11 +989,13 @@ async def edit_user_settings(client, query):
             sd_msg = "Disabled"
         buttons.ibutton(
             "Back",
-            f"userset {user_id} back"
+            f"userset {user_id} back",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         tokenmsg = (
             "Exists"
@@ -1063,27 +1044,34 @@ async def edit_user_settings(client, query):
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} leech"
+            f"userset {user_id} leech",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         await editMessage(
             message,
             "Send a photo to save it as custom thumbnail. Timeout: 60 sec",
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            set_thumb,
-            pre_event=query
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc,
-            True
-        )
+        try:
+            event = await event_handler(
+                client,
+                query,
+                True
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_thumb(event),
+                update_user_settings(query)
+            )
     elif data[2] == "yto":
         await query.answer()
         buttons = ButtonMaker()
@@ -1092,17 +1080,19 @@ async def edit_user_settings(client, query):
             False
         ) or config_dict["YT_DLP_OPTIONS"]:
             buttons.ibutton(
-                "Remove YT-DLP Options",
+                "Remove Yt-Dlp Options",
                 f"userset {user_id} yt_opt",
                 "header"
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} back"
+            f"userset {user_id} back",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         rmsg = """
 Send YT-DLP Options. Timeout: 60 sec
@@ -1119,16 +1109,23 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             rmsg,
             buttons.build_menu(1)
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="yt_opt"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "yt_opt"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "lss":
         await query.answer()
         buttons = ButtonMaker()
@@ -1142,11 +1139,13 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} leech"
+            f"userset {user_id} leech",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         sp_msg = "Send Leech split size.\nDon't add unit(MB, GB), default unit is <b>GB</b>\n"
         sp_msg += "\nExamples:\nSend 4 for 4GB\nor 0.5 for 512MB\n\nTimeout: 60 sec"
@@ -1155,45 +1154,61 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             sp_msg,
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="split_size"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "split_size"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "rcc":
         await query.answer()
         buttons = ButtonMaker()
         if await aiopath.exists(rclone_conf):
             buttons.ibutton(
-                "Delete rclone.conf",
+                "Delete Rclone.conf",
                 f"userset {user_id} rclone_config"
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} rclone"
+            f"userset {user_id} rclone",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         await editMessage(
-            message, "Send rclone.conf. Timeout: 60 sec", buttons.build_menu(1)
+            message,
+            "Send rclone.conf. Timeout: 60 sec",
+            buttons.build_menu(1)
         )
-        pfunc = partial(
-            add_rclone,
-            pre_event=query
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc,
-            document=True
-        )
+        try:
+            event = await event_handler(
+                client,
+                query,
+                document=True
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                add_rclone(event),
+                update_user_settings(query)
+            )
     elif data[2] == "rcp":
         await query.answer()
         buttons = ButtonMaker()
@@ -1207,11 +1222,13 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} rclone"
+            f"userset {user_id} rclone",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         rmsg = "Send Rclone Path. Timeout: 60 sec"
         await editMessage(
@@ -1219,46 +1236,61 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             rmsg,
             buttons.build_menu(1)
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="rclone_path"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "rclone_path"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "token":
         await query.answer()
         buttons = ButtonMaker()
         if await aiopath.exists(token_pickle):
             buttons.ibutton(
-                "Delete token.pickle",
+                "Delete Token.pickle",
                 f"userset {user_id} token_pickle"
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} gdrive"
+            f"userset {user_id} gdrive",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         await editMessage(
-            message, "Send token.pickle. Timeout: 60 sec",
+            message,
+            "Send token.pickle.\n\nTimeout: 60 sec",
             buttons.build_menu(1)
         )
-        pfunc = partial(
-            add_token_pickle,
-            pre_event=query
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc,
-            document=True
-        )
+        try:
+            event = await event_handler(
+                client,
+                query,
+                document=True
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                add_token_pickle(event),
+                update_user_settings(query)
+            )
     elif data[2] == "gdid":
         await query.answer()
         buttons = ButtonMaker()
@@ -1272,28 +1304,37 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} gdrive"
+            f"userset {user_id} gdrive",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
-        rmsg = "Send Gdrive ID. Timeout: 60 sec"
+        rmsg = "Send Gdrive ID.\n\nTimeout: 60 sec"
         await editMessage(
             message,
             rmsg,
             buttons.build_menu(1)
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="gdrive_id"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "gdrive_id"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "index":
         await query.answer()
         buttons = ButtonMaker()
@@ -1307,28 +1348,37 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} gdrive"
+            f"userset {user_id} gdrive",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
-        rmsg = "Send Index URL. Timeout: 60 sec"
+        rmsg = "Send Index URL.\n\nTimeout: 60 sec"
         await editMessage(
             message,
             rmsg,
             buttons.build_menu(1)
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="index_url"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "index_url"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "leech_prefix":
         await query.answer()
         buttons = ButtonMaker()
@@ -1341,32 +1391,41 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             and config_dict["LEECH_FILENAME_PREFIX"]
         ):
             buttons.ibutton(
-                "Remove Leech Prefix",
+                "Remove Prefix",
                 f"userset {user_id} lprefix"
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} leech"
+            f"userset {user_id} leech",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         await editMessage(
             message,
-            "Send Leech Filename Prefix. You can add HTML tags. Timeout: 60 sec",
+            "Send Leech Filename Prefix.\nYou can add HTML tags.\n\nTimeout: 60 sec",
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="lprefix"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "lprefix"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "leech_suffix":
         await query.answer()
         buttons = ButtonMaker()
@@ -1379,32 +1438,41 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             and config_dict["LEECH_FILENAME_SUFFIX"]
         ):
             buttons.ibutton(
-                "Remove Leech Suffix",
+                "Remove Suffix",
                 f"userset {user_id} lsuffix"
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} leech"
+            f"userset {user_id} leech",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         await editMessage(
             message,
-            "Send Leech Filename Suffix. You can add HTML tags. Timeout: 60 sec",
+            "Send Leech Filename Suffix.\nYou can add HTML tags.\n\nTimeout: 60 sec",
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="lsuffix"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "lsuffix"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "leech_cap_font":
         await query.answer()
         buttons = ButtonMaker()
@@ -1417,16 +1485,18 @@ or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to conve
             and config_dict["LEECH_CAPTION_FONT"]
         ):
             buttons.ibutton(
-                "Remove Leech Caption Font",
+                "Remove Caption Font",
                 f"userset {user_id} lcapfont"
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} leech"
+            f"userset {user_id} leech",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         msg = """
 Send Leech Caption Font. Default is regular.
@@ -1448,16 +1518,23 @@ Timeout: 60 sec
             msg,
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="lcapfont"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "lcapfont"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "ldest":
         await query.answer()
         buttons = ButtonMaker()
@@ -1475,27 +1552,36 @@ Timeout: 60 sec
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} leech"
+            f"userset {user_id} leech",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         await editMessage(
             message,
-            "Send leech destination ID/USERNAME/PM. Timeout: 60 sec",
+            "Send leech destination\nID or USERNAME or PM.\n\nTimeout: 60 sec",
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="leech_dest"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "leech_dest"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "ex_ex":
         await query.answer()
         buttons = ButtonMaker()
@@ -1513,11 +1599,13 @@ Timeout: 60 sec
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} back"
+            f"userset {user_id} back",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         ex_msg = "<b>Send exluded extenions seperated by space without dot at beginning.</b>\n"
         ex_msg += "<b>Ex:</b> <code>zip mp4 jpg</code>\n<b>Timeout:</b> 60 sec\n\n"
@@ -1527,16 +1615,23 @@ Timeout: 60 sec
             ex_msg,
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="excluded_extensions"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "excluded_extensions"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "name_substitute":
         await query.answer()
         buttons = ButtonMaker()
@@ -1550,11 +1645,13 @@ Timeout: 60 sec
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} back"
+            f"userset {user_id} back",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         emsg = r"""
 Word Substitutions. You can add pattern instead of normal text. Timeout: 60 sec
@@ -1579,16 +1676,23 @@ Example-2: \(text\) | \[test\] : test | \\text\\ : text : s
             emsg,
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="name_sub"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "name_sub"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] in [
         "gd",
         "rc"
@@ -1628,11 +1732,13 @@ Example-2: \(text\) | \[test\] : test | \\text\\ : text : s
             )
         buttons.ibutton(
             "Back",
-            f"userset {user_id} back"
+            f"userset {user_id} back",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         await editMessage(
             message,
@@ -1644,62 +1750,84 @@ Example-2: \(text\) | \[test\] : test | \\text\\ : text : s
         buttons = ButtonMaker()
         buttons.ibutton(
             "Back",
-            f"userset {user_id} upload_paths"
+            f"userset {user_id} upload_paths",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         await editMessage(
             message,
-            "Send path name(no space in name) which you will use it as a shortcut and the path/id seperated by space. You can add multiple names and paths separated by new line. Timeout: 60 sec",
+            (
+                "Send path name(no space in name) which you will use it as"
+                " a shortcut and the path/id seperated by space. You can add"
+                " multiple names and paths separated by new line. Timeout: 60 sec"
+            ),
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            set_option,
-            pre_event=query,
-            option="upload_paths"
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                set_option(
+                    event,
+                    "upload_paths"
+                ),
+                update_user_settings(query)
+            )
     elif data[2] == "rm_path":
         await query.answer()
         buttons = ButtonMaker()
         buttons.ibutton(
             "Back",
-            f"userset {user_id} upload_paths"
+            f"userset {user_id} upload_paths",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         await editMessage(
             message,
-            "Send paths names which you want to delete, separated by space. Timeout: 60 sec",
+            "Send paths names which you want to delete, separated by space.\n\nTimeout: 60 sec",
             buttons.build_menu(1),
         )
-        pfunc = partial(
-            delete_path,
-            pre_event=query
-        )
-        await event_handler(
-            client,
-            query,
-            pfunc
-        )
+        try:
+            event = await event_handler(
+                client,
+                query
+            )
+        except ListenerTimeout:
+            await update_user_settings(query)
+        except ListenerStopped:
+            pass
+        else:
+            await gather(
+                delete_path(event),
+                update_user_settings(query)
+            )
     elif data[2] == "show_path":
         await query.answer()
         buttons = ButtonMaker()
         buttons.ibutton(
             "Back",
-            f"userset {user_id} upload_paths"
+            f"userset {user_id} upload_paths",
+            position="footer"
         )
         buttons.ibutton(
             "Close",
-            f"userset {user_id} close"
+            f"userset {user_id} close",
+            position="footer"
         )
         user_dict = user_data.get(
             user_id,
@@ -1786,22 +1914,24 @@ async def send_users_settings(_, message):
 bot.add_handler( # type: ignore
     MessageHandler(
         send_users_settings,
-        filters=command(
-            BotCommands.UsersCommand
+        filters=filters.command(
+            BotCommands.UsersCommand,
+            case_sensitive=True
         ) & CustomFilters.sudo,
     )
 )
 bot.add_handler( # type: ignore
     MessageHandler(
         user_settings,
-        filters=command(
-            BotCommands.UserSetCommand
+        filters=filters.command(
+            BotCommands.UserSetCommand,
+            case_sensitive=True
         ) & CustomFilters.authorized,
     )
 )
 bot.add_handler( # type: ignore
     CallbackQueryHandler(
         edit_user_settings,
-        filters=regex("^userset")
+        filters=filters.regex("^userset")
     )
 )
