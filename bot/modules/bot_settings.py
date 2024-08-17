@@ -318,7 +318,7 @@ Timeout: 60 sec.
             )
         msg = f"Qbittorrent Options | Page: {int(START / 10)} | State: {STATE}"
 
-    button = buttons.build_menu(1)
+    button = buttons.build_menu(1) if key is None else buttons.build_menu(2)
     return (
         msg,
         button
