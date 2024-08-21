@@ -12,7 +12,6 @@ from asyncio import (
     wait_for,
 )
 from dotenv import load_dotenv
-from functools import partial
 from io import BytesIO
 from os import (
     environ,
