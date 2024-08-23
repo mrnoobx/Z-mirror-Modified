@@ -3,10 +3,7 @@ from asyncio import (
     sleep
 )
 from time import time
-from pyrogram.errors import (
-    FloodWait,
-    FloodPremiumWait
-)
+from nekozee.errors import FloodWait
 
 from bot import (
     config_dict,
