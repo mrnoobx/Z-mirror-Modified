@@ -184,15 +184,23 @@ IS_PREMIUM_USER = False
 user = ''
 USER_SESSION_STRING = environ.get('USER_SESSION_STRING', '')
 if len(USER_SESSION_STRING) != 0:
-    user = tgClient('user', TELEGRAM_API, TELEGRAM_HASH, session_string=USER_SESSION_STRING,
+    try:
+        user = tgClient('user', TELEGRAM_API, TELEGRAM_HASH, session_string=USER_SESSION_STRING,
                     workers=1000, parse_mode=enums.ParseMode.HTML, no_updates=True).start()
-    if user.me.is_bot:
-        error("You added bot string for USER_SESSION_STRING this is not allowed! Exiting now")
-        user.stop()
-        exit(1)
-    else:
-        IS_PREMIUM_USER = user.me.is_premium
-        info(f"Successfully logged into @{user.me.username}...")
+        IS_PREMIUM_USER = user.me.is_premium # type: ignore
+        log_info(f"Successfully logged into @{user.me.username} DC: {user.session.dc_id}.") # type: ignore
+        if user.me.is_bot: # type: ignore
+            log_error("You added bot string in USER_SESSION_STRING which is not allowed!")
+            user.stop() # type: ignore
+            IS_PREMIUM_USER = False
+            user = ""
+    except:
+        log_error("Failed to create client from USER_SESSION_STRING")
+        IS_PREMIUM_USER = False
+        user = ""
+else:
+    IS_PREMIUM_USER = False
+    user = ""
 
 MEGA_EMAIL = environ.get('MEGA_EMAIL', '')
 MEGA_PASSWORD = environ.get('MEGA_PASSWORD', '')
