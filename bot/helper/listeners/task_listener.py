@@ -4,6 +4,7 @@ from aiofiles.os import (
     makedirs,
     remove
 )
+import asyncio
 from aioshutil import move
 from asyncio import (
     gather,
@@ -427,6 +428,8 @@ class TaskListener(TaskConfig):
         rclonePath="",
         dir_id=""
     ):
+        await self.message.reply_sticker("CAACAgIAAxkBAAEcVCtnXt9Dvi16SLqhI6a8n4uW-jeGsQACjzMAAumt-UlYSD7bJ5sg1DYE")
+        await asyncio.sleep(2)
         if (
             config_dict["DATABASE_URL"]
             and config_dict["STOP_DUPLICATE_TASKS"]
@@ -714,6 +717,8 @@ class TaskListener(TaskConfig):
         await start_from_queued()
 
     async def on_download_error(self, error, button=None):
+        await self.message.reply_sticker("CAACAgUAAxkBAAEcVHlnXxRwEUXMiYP7Wr14BF3Xa5EZ2QAC7BAAAmLLIVWOWldZZfMTXjYE")
+        await asyncio.sleep(2)
         async with task_dict_lock:
             if self.mid in task_dict:
                 del task_dict[self.mid]
@@ -788,6 +793,8 @@ class TaskListener(TaskConfig):
             await remove(self.thumb)
 
     async def on_upload_error(self, error):
+        await self.message.reply_sticker("CAACAgUAAxkBAAEcVHxnXxSAGgg6GGGlbetb2Yn52nfc0AACmxAAAkdPYVRfHbxGvuHolDYE")
+        await asyncio.sleep(2)
         async with task_dict_lock:
             if self.mid in task_dict:
                 del task_dict[self.mid]
