@@ -26,11 +26,10 @@ from uuid import uuid4
 from base64 import b64decode
 
 from bot import config_dict
-from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
-from bot.helper.ext_utils.help_messages import PASSWORD_ERROR_MESSAGE
-from bot.helper.ext_utils.links_utils import is_share_link
-from bot.helper.ext_utils.status_utils import speed_string_to_bytes
-
+from ...ext_utils.exceptions import DirectDownloadLinkException
+from ...ext_utils.help_messages import PASSWORD_ERROR_MESSAGE
+from ...ext_utils.links_utils import is_share_link
+from ...ext_utils.status_utils import speed_string_to_bytes
 
 user_agent = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0"
@@ -42,15 +41,7 @@ def direct_link_generator(link):
     domain = urlparse(link).hostname
     if not domain:
         raise DirectDownloadLinkException("ERROR: Invalid URL")
-    if (
-        "youtube.com" in domain
-        or "youtu.be" in domain
-    ):
-        raise DirectDownloadLinkException("ERROR: Use ytdl cmds for Youtube links")
-    elif (
-        "yadi.sk" in link
-        or "disk.yandex." in link
-    ):
+    elif "yadi.sk" in link or "disk.yandex." in link:
         return yandex_disk(link)
     elif "mediafire.com" in domain:
         return mediafire(link)
@@ -62,7 +53,14 @@ def direct_link_generator(link):
         return hxfile(link)
     elif "1drv.ms" in domain:
         return onedrive(link)
-    elif "pixeldrain.com" in domain:
+    elif any(
+        x in domain
+        for x
+        in [
+            "pixeldrain.com",
+            "pixeldra.in"
+        ]
+    ):
         return pixeldrain(link)
     elif "racaty" in domain:
         return racaty(link)
@@ -168,6 +166,11 @@ def direct_link_generator(link):
             "gibibox.com",
             "goaibox.com",
             "terasharelink.com",
+            "teraboxlink.com",
+            "freeterabox.com",
+            "1024terabox.com",
+            "terafileshare.com",
+            "teraboxshare.com"
         ]
     ):
         return terabox(link)
@@ -277,8 +280,15 @@ def mediafire(url, session=None):
         url
     ):
         return final_link[0]
+    def _repair_download(url, session):
+        try:
+            html = HTML(session.get(url).text)
+            if new_link := html.xpath('//a[@id="continue-btn"]/@href'):
+                return mediafire(f"https://mediafire.com/{new_link[0]}")
+        except Exception as e:
+            raise DirectDownloadLinkException(f"ERROR: {e.__class__.__name__}") from e
     if session is None:
-        session = Session()
+        session = create_scraper()
         parsed_url = urlparse(url)
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
     try:
@@ -292,17 +302,23 @@ def mediafire(url, session=None):
     if html.xpath("//div[@class='passwordPrompt']"):
         if not _password:
             session.close()
-            raise DirectDownloadLinkException(f"ERROR: {PASSWORD_ERROR_MESSAGE}".format(url))
+            raise DirectDownloadLinkException(
+                f"ERROR: {PASSWORD_ERROR_MESSAGE}".format(url)
+            )
         try:
-            html = HTML(session.post(url, data={"downloadp": _password}).text)
+            html = HTML(session.post(
+                url,
+                data={"downloadp": _password}).text
+            )
         except Exception as e:
             session.close()
             raise DirectDownloadLinkException(f"ERROR: {e.__class__.__name__}") from e
         if html.xpath("//div[@class='passwordPrompt']"):
             session.close()
             raise DirectDownloadLinkException("ERROR: Wrong password.")
-    if not (final_link := html.xpath("//a[@id='downloadButton']/@href")):
-        session.close()
+    if not (final_link := html.xpath('//a[@aria-label="Download file"]/@href')):
+        if repair_link := html.xpath("//a[@class='retry']/@href"):
+            return _repair_download(repair_link[0], session)
         raise DirectDownloadLinkException(
             "ERROR: No links found in this page Try Again"
         )
@@ -310,7 +326,10 @@ def mediafire(url, session=None):
         final_url = f"https://{final_link[0][2:]}"
         if _password:
             final_url += f"::{_password}"
-        return mediafire(final_url, session)
+        return mediafire(
+            final_url,
+            session
+        )
     session.close()
     return final_link[0]
 
@@ -436,11 +455,11 @@ def pixeldrain(url):
     url = url.strip("/ ")
     file_id = url.split("/")[-1]
     if url.split("/")[-2] == "l":
-        info_link = f"https://pixeldrain.com/api/list/{file_id}"
-        dl_link = f"https://pixeldrain.com/api/list/{file_id}/zip?download"
+        info_link = f"https://pixeldra.in/api/list/{file_id}"
+        dl_link = f"https://pixeldra.in/api/list/{file_id}/zip?download"
     else:
-        info_link = f"https://pixeldrain.com/api/file/{file_id}/info"
-        dl_link = f"https://pixeldrain.com/api/file/{file_id}?download"
+        info_link = f"https://pixeldra.in/api/file/{file_id}/info"
+        dl_link = f"https://pixeldra.in/api/file/{file_id}?download"
     with create_scraper() as session:
         try:
             resp = session.get(info_link).json()
@@ -450,8 +469,9 @@ def pixeldrain(url):
         return dl_link
     else:
         raise DirectDownloadLinkException(
-            f"ERROR: Cant't download due {resp['message']}."
+            f"ERROR: Can't download due to {resp['message']}."
         )
+
 
 
 def streamtape(url):
@@ -1095,11 +1115,11 @@ def gofile(url):
             "Accept": "*/*",
             "Connection": "keep-alive",
         }
-        __url = f"https://api.gofile.io/accounts"
+        __url = "https://api.gofile.io/accounts"
         try:
             __res = session.post(__url, headers=headers).json()
             if __res["status"] != "ok":
-                raise DirectDownloadLinkException(f"ERROR: Failed to get token.")
+                raise DirectDownloadLinkException("ERROR: Failed to get token.")
             return __res["data"]["token"]
         except Exception as e:
             raise e
@@ -1286,6 +1306,16 @@ def mediafireFolder(url):
     details["title"] = folder_infos[0]["name"]
 
     def __scraper(url):
+        session = create_scraper()
+        parsed_url = urlparse(url)
+        url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+        def __repair_download(url):
+            try:
+                html = HTML(session.get(url).text)
+                if new_link := html.xpath('//a[@id="continue-btn"]/@href'):
+                    return __scraper(f"https://mediafire.com/{new_link[0]}")
+            except:
+                return
         try:
             html = HTML(session.get(url).text)
         except:
@@ -1301,8 +1331,12 @@ def mediafireFolder(url):
                 return
             if html.xpath("//div[@class='passwordPrompt']"):
                 return
-        if final_link := html.xpath("//a[@id='downloadButton']/@href"):
+        if final_link := html.xpath('//a[@aria-label="Download file"]/@href'):
+            if final_link[0].startswith("//"):
+                return __scraper(f"https://{final_link[0][2:]}")
             return final_link[0]
+        if repair_link := html.xpath("//a[@class='retry']/@href"):
+            return __repair_download(repair_link[0])
 
     def __get_content(folderKey, folderPath="", content_type="folders"):
         try:

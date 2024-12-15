@@ -31,7 +31,7 @@ from bot import (
     pkg_info,
     qbittorrent_client
 )
-from bot.helper.ext_utils.bot_utils import (
+from .bot_utils import (
     sync_to_async,
     cmd_exec
 )
@@ -75,6 +75,7 @@ ARCH_EXT = [
     ".udf",
     ".vhd",
     ".xar",
+    ".zst",
 ]
 
 FIRST_SPLIT_REGEX = r"(\.|_)part0*1\.rar$|(\.|_)7z\.0*1$|(\.|_)zip\.0*1$|^(?!.*(\.|_)part\d+\.rar$).*\.rar$"
@@ -197,7 +198,11 @@ async def clean_unwanted(path, custom_list=None):
                 dirpath,
                 ignore_errors=True
             )
-    for dirpath, _, files in await sync_to_async(
+    for (
+        dirpath,
+        _,
+        files
+    ) in await sync_to_async(
         walk,
         path,
         topdown=False
@@ -210,12 +215,19 @@ async def get_path_size(path):
     if await aiopath.isfile(path):
         return await aiopath.getsize(path)
     total_size = 0
-    for root, _, files in await sync_to_async(
+    for (
+        root,
+        _,
+        files
+    ) in await sync_to_async(
         walk,
         path
     ):
         for f in files:
-            abs_path = ospath.join(root, f)
+            abs_path = ospath.join(
+                root,
+                f
+            )
             total_size += await aiopath.getsize(abs_path)
     return total_size
 

@@ -1,5 +1,5 @@
 mirror = """
-<b>Send link along with command line or </b>
+<b>Send link along with command line</b>:
 
 /cmd link
 
@@ -9,8 +9,6 @@ mirror = """
 
 <b>NOTE:</b>
 1. Commands that start with <b>qb</b> are ONLY for torrents.
-
-<b>Join: @JetMirror</b>
 """
 
 yt = """
@@ -24,8 +22,6 @@ yt = """
 
 Check all supported <a href='https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md'>SITES</a>
 Check all yt-dlp API options from this <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>FILE</a> or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to convert CLI arguments to API options.
-
-<b>Join: @JetMirror</b>
 """
 
 clone = """
@@ -34,42 +30,49 @@ Send Gdrive link or rclone path along with command or by replying to the link/rc
 Use -sync to use sync method in rclone.
 
 Example: /cmd rcl/rclone_path -up rcl/rclone_path/rc -sync
-
-<b>Join: @JetMirror</b>
 """
 
 new_name = """
-<b>New Name</b>: -n
+<b>Rename</b>: -n
 
-/cmd link -n new name
+/cmd link -n new_name
 Note: Doesn't work with torrents
-
-<b>Join: @JetMirror</b>
 """
 
 multi_link = """
 <b>Multi links only by replying to the first link/file</b>: -m
 
 /cmd -m 10(number of links/files)
-
-<b>Join: @JetMirror</b>
 """
 
 same_dir = """
-<b>Multi links within the same upload directory only by replying to the first link/file</b>: -sd
+<b>Move file(s)/folder(s) to new folder</b>: -sd
 
-/cmd -m 10(number of links/files) -sd folder name (multi message)
-/cmd -b -sd folder name (bulk-message/file)
+You can use this arg also to move multiple links/torrents contents to the same directory, so all links will be uploaded together as one task
 
-<b>Join: @JetMirror</b>
+/cmd link -sd new folder (only one link inside new folder)
+/cmd -m 10(number of links/files) -sd folder name (all links contents in one folder)
+/cmd -b -sd folder name (reply to batch of message/file(each link on new line))
+
+While using bulk you can also use this arg with different folder name along with the links in message or file batch
+Example:
+link1 -sd folder1
+link2 -sd folder1
+link3 -sd folder2
+link4 -sd folder2
+link5 -sd folder3
+link6
+
+so link1 and link2 content will be uploaded from same folder which is folder1
+link3 and link4 content will be uploaded from same folder also which is folder2
+link5 will uploaded alone inside new folder named folder3
+link6 will get uploaded normally alone
 """
 
 thumb = """
 <b>Thumbnail for the current task</b>: -t
 
 /cmd link -t tg-message-link(doc or photo)
-
-<b>Join: @JetMirror</b>
 """
 
 split_size = """
@@ -77,8 +80,6 @@ split_size = """
 
 /cmd link -sp (500mb or 2gb or 4000000000)
 Note: Only mb and gb are supported or write in bytes without unit!
-
-<b>Join: @JetMirror</b>
 """
 
 upload = """
@@ -94,8 +95,6 @@ If you want to add path or gdrive manually from your config/token (uploaded from
 
 In case you want to specify whether using token.pickle or service accounts you can add tp:gdrive_id or sa:gdrive_id or mtp:gdrive_id.
 DEFAULT_UPLOAD has no effect on leech cmds.
-
-<b>Join: @JetMirror</b>
 """
 
 user_download = """
@@ -107,8 +106,6 @@ user_download = """
 /cmd sa:gdrive_id to download using service account and file_id in case service account disabled.
 /cmd mtp:gdrive_id or mtp:link to download using user token.pickle uploaded from usetting
 /cmd mrcc:remote:path to download using user rclone config uploaded from usetting
-
-<b>Join: @JetMirror</b>
 """
 
 rcf = """
@@ -117,25 +114,25 @@ rcf = """
 /cmd link|path|rcl -up path|rcl -rcf --buffer-size:8M|--drive-starred-only|key|key:value
 This will override all other flags except --exclude.
 Check here all <a href='https://rclone.org/flags/'>RcloneFlags</a>.
-
-<b>Join: @JetMirror</b>
 """
 
 bulk = """
 <b>Bulk Download</b>: -b
 
-Bulk can be used by text message and by replying to a text file containing links separated by a new line.
-You can use it only by replying to a message(text/file).
+Bulk can be used only by replying to text message or text file contains links separated by new line.
+
 Example:
 link1 -n new name -up remote1:path1 -rcf |key:value|key:value
 link2 -z -n new name -up remote2:path2
 link3 -e -n new name -up remote2:path2
-Reply to this example by this cmd -> /cmd -b(bulk) or /cmd -b -sd folder name
-You can set the start and end of the links from the bulk like seed, with -b start:end or only end by -b :end or only start by -b start.
-The default start is from zero(first link) to infinity.
 
-<b>Join: @JetMirror</b>
-"""
+Reply to this example by this cmd -> /cmd -b(bulk)
+
+Note: Any arg along with the cmd will be setted to all links
+/cmd -b -up remote: -z -sd folder name (all links contents in one zipped folder uploaded to one destination)
+so you can't set different upload destinations along with link incase you have added -sd along with cmd
+You can set start and end of the links from the bulk like seed, with -b start:end or only end by -b :end or only start by -b start.
+The default start is from zero(first link) to inf."""
 
 rlone_dl = """
 <b>Rclone Download</b>:
@@ -145,19 +142,16 @@ Treat rclone paths exactly like links
 Users can add their own rclone from user settings
 If you want to add a path manually from your config add mrcc: before the path without space
 /cmd mrcc:main:dump/ubuntu.iso
-
-<b>Join: @JetMirror</b>
 """
 
 extract_zip = """
 <b>Extract/Zip</b>: -e -z
 
+/cmd link -e (extract)
 /cmd link -e password (extract password protected)
-/cmd link -z password (zip password protected)
+
 /cmd link -z password -e (extract and zip password protected)
 Note: When both extract and zip are added with cmd, it will extract first and then zip, so always extract first.
-
-<b>Join: @JetMirror</b>
 """
 
 join = """
@@ -169,8 +163,6 @@ By Reply:
 /cmd -b -j -sd folder name
 If you have a link(folder) that has split files:
 /cmd link -j
-
-<b>Join: @JetMirror</b>
 """
 
 tg_links = """
@@ -185,8 +177,6 @@ Super: https://t.me/c/channel_id/message_id
 Range: https://t.me/channel_name/first_message_id-last_message_id
 Range Example: tg://openmessage?user_id=xxxxxx&message_id=555-560 or https://t.me/channel_name/100-150
 Note: Range link will work only by replying cmd to it.
-
-<b>Join: @JetMirror</b>
 """
 
 sample_video = """
@@ -195,18 +185,14 @@ sample_video = """
 Create a sample video for one video or a folder of videos.
 /cmd -sv (it will take the default values which are 60sec sample duration and part duration is 4sec).
 You can control those values. Example: /cmd -sv 70:5(sample-duration:part-duration) or /cmd -sv :5 or /cmd -sv 70.
-
-<b>Join: @JetMirror</b>
 """
 
 screenshot = """
 <b>Screenshots</b>: -ss
 
-Create up to 10 screenshots for one video or a folder of videos.
-/cmd -ss (it will take the default values which are 10 photos).
+Create screenshots for one video or folder of videos.
+/cmd -ss (it will take the default values which is 10 photos).
 You can control this value. Example: /cmd -ss 6.
-
-<b>Join: @JetMirror</b>
 """
 
 seed = """
@@ -215,8 +201,6 @@ seed = """
 /cmd link -d ratio:seed_time or by replying to file/link
 To specify ratio and seed time add -d ratio:time.
 Example: -d 0.7:10 (ratio and time) or -d 0.7 (only ratio) or -d :10 (only time) where time is in minutes.
-
-<b>Join: @JetMirror</b>
 """
 
 zip_arg = """
@@ -225,7 +209,8 @@ zip_arg = """
 /cmd link -z (zip)
 /cmd link -z password (zip password protected)
 
-<b>Join: @JetMirror</b>
+/cmd link -z password -e (extract and zip password protected)
+Note: When both extract and zip are added with cmd, it will extract first and then zip, so always extract first.
 """
 
 qual = """
@@ -233,134 +218,162 @@ qual = """
 
 In case default quality is added from yt-dlp options using format option and you need to select quality for specific link or links with multi links feature.
 /cmd link -s
-
-<b>Join: @JetMirror</b>
 """
 
 yt_opt = """
 <b>Options</b>: -opt
 
-/cmd link -opt playliststart:^10|fragment_retries:^inf|matchtitle:S13|writesubtitles:true|live_from_start:true|postprocessor_args:{"ffmpeg": ["-threads", "4"]}|wait_for_video:(5, 100)
+/cmd link -opt playliststart:^10|fragment_retries:^inf|matchtitle:S13|writesubtitles:true|live_from_start:true|postprocessor_args:{"ffmpeg": ["-threads", "4"]}|wait_for_video:(5, 100)|download_ranges:[{"start_time": 0, "end_time": 10}]
+
 Note: Add `^` before integer or float, some values must be numeric and some string.
 Like playlist_items:10 works with string, so no need to add `^` before the number but playlistend works only with integer so you must add `^` before the number like example above.
 You can add tuple and dict also. Use double quotes inside dict.
-
-<b>Join: @JetMirror</b>
 """
 
 convert_media = """
 <b>Convert Media</b>: -ca -cv
+
 /cmd link -ca mp3 -cv mp4 (convert all audios to mp3 and all videos to mp4)
 /cmd link -ca mp3 (convert all audios to mp3)
 /cmd link -cv mp4 (convert all videos to mp4)
 /cmd link -ca mp3 + flac ogg (convert only flac and ogg audios to mp3)
 /cmd link -cv mp4 - webm flv (convert all videos to mp4 except webm and flv)
-
-<b>Join: @JetMirror</b>
 """
 
 force_start = """
 <b>Force Start</b>: -f -fd -fu
+
 /cmd link -f (force download and upload)
 /cmd link -fd (force download only)
 /cmd link -fu (force upload directly after download finishes)
-
-<b>Join: @JetMirror</b>
 """
 
 gdrive = """
 <b>Gdrive</b>: link
 If DEFAULT_UPLOAD is `rc` then you can pass up: `gd` to upload using gdrive tools to GDRIVE_ID.
+
 /cmd gdriveLink or gdl or gdriveId -up gdl or gdriveId or gd
 /cmd tp:gdriveLink or tp:gdriveId -up tp:gdriveId or gdl or gd (to use token.pickle if service account enabled)
 /cmd sa:gdriveLink or sa:gdriveId -p sa:gdriveId or gdl or gd (to use service account if service account disabled)
 /cmd mtp:gdriveLink or mtp:gdriveId -up mtp:gdriveId or gdl or gd(if you have added upload gdriveId from usetting) (to use user token.pickle that uploaded by usetting)
-
-<b>Join: @JetMirror</b>
 """
 
 rclone_cl = """
 <b>Rclone</b>: path
 If DEFAULT_UPLOAD is `gd` then you can pass up: `rc` to upload to RCLONE_PATH.
+
 /cmd rcl/rclone_path -up rcl/rclone_path/rc -rcf flagkey:flagvalue|flagkey|flagkey:flagvalue
 /cmd rcl or rclonePath -up rclonePath or rc or rcl
 /cmd mrcc:rclonePath -up rcl or rc(if you have added rclone path from usetting) (to use user config)
-
-<b>Join: @JetMirror</b>
 """
 
-name_sub = """
+name_sub = r"""
 <b>Name Substitution</b>: -ns
-/cmd link -ns tea : coffee : s|ACC :  : s|mP4
-This will affect all files. Format: wordToReplace : wordToReplaceWith : sensitiveCase
-1. tea will get replaced by coffee with sensitive case because I have added `s` last of the option.
-2. ACC will get removed because I have added nothing between to replace with sensitive case because I have added `s` last of the option.
-3. mP4 will get removed because I have added nothing to replace with
 
-<b>Join: @JetMirror</b>
+<b>Name Substitution</b>: -ns
+/cmd link -ns script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[ZEE\]/ZEE | \\text\\/text/s
+This will affect on all files. Format: wordToReplace/wordToReplaceWith/sensitiveCase
+Word Subtitions. You can add pattern instead of normal text. Timeout: 60 sec
+NOTE: You must add \ before any character, those are the characters: \^$.|?*+()[]{}-
+1. script will get replaced by code with sensitive case
+2. mirror will get replaced by leech
+4. tea will get replaced by space with sensitive case
+5. clone will get removed
+6. cpu will get replaced by space
+7. [ZEE] will get replaced by ZEE
+8. \text\ will get replaced by text with sensitive case
 """
 
 mixed_leech = """
 <b>Mixed Leech</b>: -ml
-/cmd link -ml (leech by user and bot session with respect to size)
 
-<b>Join: @JetMirror</b>
+/cmd link -ml (leech by user and bot session with respect to size)
+"""
+
+thumbnail_layout = """
+<b>Thumbnail Layout</b>: -tl
+
+/cmd link -tl 3x3 (widthxheight) 3 photos in row and 3 photos in column
+"""
+
+leech_as = """
+<b>Leech as</b>: -doc -med
+
+/cmd link -doc (Leech as document)
+/cmd link -med (Leech as media)
+"""
+
+metadata = """
+<b>Metadata</b>: -md
+/cmd link -md text
+It will add text in your video metadata. (MKV & MP4 supports only)
+
+
+<b>Metadata Attachment</b>: -mda
+/cmd link -mda tg-message-link(doc or photo) or any direct link
+It will embed thumb in your video. (MKV & MP4 supports only)
 """
 
 YT_HELP_DICT = {
     "main": yt,
-    "New-Name": f"{new_name}\nNote: Don't add file extension",
-    "Zip": zip_arg,
-    "Quality": qual,
-    "Options": yt_opt,
-    "Multi-Link": multi_link,
-    "Same-Directory": same_dir,
-    "Thumb": thumb,
-    "Split-Size": split_size,
-    "Upload-Destination": upload,
-    "Rclone-Flags": rcf,
-    "Bulk": bulk,
-    "Sample-Video": sample_video,
-    "Screenshot": screenshot,
-    "Convert-Media": convert_media,
-    "Force-Start": force_start,
-    "Name-Substitute": name_sub,
-    "Mixed-Leech": mixed_leech,
+    "ʀᴇɴᴀᴍᴇ\nꜰɪʟᴇ": f"{new_name}\nNote: Don't add file extension",
+    "ᴢɪᴘ\nꜰɪʟᴇꜱ": zip_arg,
+    "Qᴜᴀʟɪᴛʏ\nᴏᴘᴛ": qual,
+    "ʏᴛ\nᴏᴘᴛɪᴏɴꜱ": yt_opt,
+    "ᴍᴜʟᴛɪ\nʟɪɴᴋ": multi_link,
+    "ꜱᴀᴍᴇ\nᴅɪʀᴇᴄᴛᴏʀʏ": same_dir,
+    "ᴀᴅᴅ\nᴛʜᴜᴍʙ": thumb,
+    "ꜱᴘʟɪᴛ\nꜱɪᴢᴇ": split_size,
+    "ᴜᴘʟᴏᴀᴅ\nᴅᴇꜱᴛɪɴᴀᴛɪᴏɴ": upload,
+    "ʀᴄʟᴏɴᴇ\nꜰʟᴀɢꜱ": rcf,
+    "ʙᴜʟᴋ\nʟɪɴᴋꜱ": bulk,
+    "ꜱᴀᴍᴘʟᴇ\nᴠɪᴅᴇᴏ": sample_video,
+    "ꜱᴄʀᴇᴇɴ\nꜱʜᴏᴛ": screenshot,
+    "ᴄᴏɴᴠᴇʀᴛ\nᴍᴇᴅɪᴀ": convert_media,
+    "ꜰᴏʀᴄᴇ\nꜱᴛᴀʀᴛ": force_start,
+    "ɴᴀᴍᴇ\nꜱᴜʙꜱᴛɪᴛᴜᴛᴇ": name_sub,
+    "ʜʏʙʀɪᴅ\nʟᴇᴇᴄʜ": mixed_leech,
+    "ᴛʜᴜᴍʙ\nʟᴀʏᴏᴜᴛ": thumbnail_layout,
+    "ʟᴇᴇᴄʜ\nᴛʏᴘᴇ": leech_as,
+    "ᴍᴇᴛᴀᴅᴀᴛᴀ\nᴀᴛᴛᴀᴄʜ": metadata,
 }
 
 MIRROR_HELP_DICT = {
     "main": mirror,
-    "New-Name": new_name,
-    "DL-Auth": "<b>Direct link authorization</b>: -au -ap\n\n/cmd link -au username -ap password",
-    "Headers": "<b>Direct link custom headers</b>: -h\n\n/cmd link -h key: value key1: value1",
-    "Extract/Zip": extract_zip,
-    "Select-Files": "<b>Bittorrent File Selection</b>: -s\n\n/cmd link -s or by replying to file/link",
-    "Torrent-Seed": seed,
-    "Multi-Link": multi_link,
-    "Same-Directory": same_dir,
-    "Thumb": thumb,
-    "Split-Size": split_size,
-    "Upload-Destination": upload,
-    "Rclone-Flags": rcf,
-    "Bulk": bulk,
-    "Join": join,
-    "Rclone-DL": rlone_dl,
-    "Tg-Links": tg_links,
-    "Sample-Video": sample_video,
-    "Screenshot": screenshot,
-    "Convert-Media": convert_media,
-    "Force-Start": force_start,
-    "User-Download": user_download,
-    "Name-Substitute": name_sub,
-    "Mixed-Leech": mixed_leech,
+    "ʀᴇɴᴀᴍᴇ\nꜰɪʟᴇ": new_name,
+    "ᴅᴏᴡɴʟᴏᴀᴅ\nᴀᴜᴛʜ": "<b>Direct link authorization</b>: -au -ap\n\n/cmd link -au username -ap password",
+    "ᴅᴅʟ\nʜᴇᴀᴅᴇʀꜱ": "<b>Direct link custom headers</b>: -h\n\n/cmd link -h key: value key1: value1",
+    "ᴇxᴛʀᴀᴄᴛ\nᴢɪᴘ": extract_zip,
+    "ꜱᴇʟᴇᴄᴛ\nꜰɪʟᴇꜱ": "<b>Bittorrent/JDownloader/Sabnzbd File Selection</b>: -s\n\n/cmd link -s or by replying to file/link",
+    "ᴛᴏʀʀᴇɴᴛ\nꜱᴇᴇᴅ": seed,
+    "ᴍᴜʟᴛɪ\nʟɪɴᴋ": multi_link,
+    "ꜱᴀᴍᴇ\nᴅɪʀᴇᴄᴛᴏʀʏ": same_dir,
+    "ᴀᴅᴅ\nᴛʜᴜᴍʙ": thumb,
+    "ꜱᴘʟɪᴛ\nꜱɪᴢᴇ": split_size,
+    "ᴜᴘʟᴏᴀᴅ\nᴅᴇꜱᴛɪɴᴀᴛɪᴏɴ": upload,
+    "ʀᴄʟᴏɴᴇ\nꜰʟᴀɢꜱ": rcf,
+    "ʙᴜʟᴋ\nʟɪɴᴋꜱ": bulk,
+    "ᴊᴏɪɴ\nꜰɪʟᴇꜱ": join,
+    "ʀᴄʟᴏɴᴇ\nᴅʟ": rlone_dl,
+    "ᴛᴇʟᴇɢʀᴀᴍ\nʟɪɴᴋꜱ": tg_links,
+    "ꜱᴀᴍᴘʟᴇ\nᴠɪᴅᴇᴏ": sample_video,
+    "ꜱᴄʀᴇᴇɴ\nꜱʜᴏᴛ": screenshot,
+    "ᴄᴏɴᴠᴇʀᴛ\nᴍᴇᴅɪᴀ": convert_media,
+    "ꜰᴏʀᴄᴇ\nꜱᴛᴀʀᴛ": force_start,
+    "ᴜꜱᴇʀ\nᴅᴏᴡɴʟᴏᴀᴅ": user_download,
+    "ɴᴀᴍᴇ\nꜱᴜʙꜱᴛɪᴛᴜᴛᴇ": name_sub,
+    "ʜʏʙʀɪᴅ\nʟᴇᴇᴄʜ": mixed_leech,
+    "ᴛʜᴜᴍʙ\nʟᴀʏᴏᴜᴛ": thumbnail_layout,
+    "ʟᴇᴇᴄʜ\nᴛʏᴘᴇ": leech_as,
+    "ᴍᴇᴛᴀᴅᴀᴛᴀ\nᴀᴛᴛᴀᴄʜ": metadata,
 }
 
 CLONE_HELP_DICT = {
     "main": clone,
-    "Multi-Link": multi_link,
-    "Bulk": bulk,
-    "Gdrive": gdrive,
-    "Rclone": rclone_cl,
+    "ᴍᴜʟᴛɪ\nʟɪɴᴋ": multi_link,
+    "ʙᴜʟᴋ\nʟɪɴᴋꜱ": bulk,
+    "ɢᴏᴏɢʟᴇ\nᴅʀɪᴠᴇ": gdrive,
+    "ʀᴄʟᴏɴᴇ\nᴅʟ": rclone_cl,
 }
 
 RSS_HELP_MESSAGE = """
@@ -385,16 +398,12 @@ Filter Notes:
 3. You can add `or` and `|` as much as you want.
 4. Take a look at the title if it has a static special character after or before the qualities or extensions or whatever and use them in the filter to avoid wrong match.
 Timeout: 60 sec.
-
-<b>Join: @JetMirror</b>
 """
 
 PASSWORD_ERROR_MESSAGE = """
-<b>This link requires a password!</b>
+<b>Links require a password!</b>
+
 - Insert <b>::</b> after the link and write the password after the sign.
 
 <b>Example:</b> link::my password
-
-<b>Join: @JetMirror</b>
 """
-

@@ -15,18 +15,26 @@ from logging import (
 )
 from qbittorrentapi import (
     NotFound404Error,
-    Client as qbClient
+    Client as QbClient
 )
 from time import sleep
-from asyncio import get_event_loop
+from asyncio import (
+    get_running_loop,
+    new_event_loop,
+    set_event_loop
+)
 
 from web.nodes import make_tree
 
 app = Flask(__name__)
 
-web_loop = get_event_loop()
+try:
+    web_loop = get_running_loop()
+except RuntimeError:
+    web_loop = new_event_loop()
+    set_event_loop(web_loop)
 
-qbittorrent_client = qbClient(
+qbittorrent_client = QbClient(
     host="localhost",
     port=8090,
     VERIFY_WEBUI_CERTIFICATE=False,
@@ -270,13 +278,13 @@ function s_validate() {
           src="https://telegra.ph/file/43af672249c94053356c7.jpg"
           alt="logo"
         />
-        <a href="https://t.me/anas_tayyar">
+        <a href="https://t.me/hrishikesh2861">
           <h2 class="name">Bittorrent Selection</h2>
         </a>
       </div>
       <div class="social">
-        <a href="https://www.github.com/anasty17/mirror-leech-telegram-bot"><i class="fab fa-github"></i></a>
-        <a href="https://t.me/anas_tayyar"><i class="fab fa-telegram"></i></a>
+        <a href="https://www.github.com/hrishi2861/Z-Mirror-Modified"><i class="fab fa-github"></i></a>
+        <a href="https://t.me/hrishikesh2861"><i class="fab fa-telegram"></i></a>
       </div>
     </header>
     <div id="sticks">
@@ -662,13 +670,13 @@ section span{
           src="https://telegra.ph/file/43af672249c94053356c7.jpg"
           alt="logo"
         />
-        <a href="https://t.me/anas_tayyar">
+        <a href="https://t.me/hrishikesh2861">
           <h2 class="name">Bittorrent Selection</h2>
         </a>
       </div>
       <div class="social">
-        <a href="https://www.github.com/anasty17/mirror-leech-telegram-bot"><i class="fab fa-github"></i></a>
-        <a href="https://t.me/anas_tayyar"><i class="fab fa-telegram"></i></a>
+        <a href="https://www.github.com/hrishi2861/Z-Mirror-Modified"><i class="fab fa-github"></i></a>
+        <a href="https://t.me/hrishikesh2861"><i class="fab fa-telegram"></i></a>
       </div>
     </header>
     <section>
@@ -851,7 +859,7 @@ def set_priority(id_):
 
 @app.route("/")
 def homepage():
-    return "<h1>Visit my channel <a href='https://telegram.me/JetMirror'>@JetMirror</a>on Telegram By <a href='https://telegram.me/Hrishikesh2861'>@Hrishikesh2861</a></h1>"
+    return "<h1>Visit my channel <a href='https://telegram.me/z_mirror'>@Z_Mirror</a>on Telegram By <a href='https://telegram.me/dawn_bharat'>@Dawn_Bharat</a></h1>"
 
 
 @app.errorhandler(Exception)

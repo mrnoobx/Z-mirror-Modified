@@ -33,7 +33,7 @@ class _BotCommands:
         self.DeleteCommand = f"del{CMD_SUFFIX}"
         self.CancelTaskCommand = [
             f"abort{CMD_SUFFIX}",
-            f"a{CMD_SUFFIX}",
+            f"A{CMD_SUFFIX}",
         ]
         self.CancelAllCommand = f"cancelall{CMD_SUFFIX}"
         self.ForceStartCommand = [
@@ -55,7 +55,11 @@ class _BotCommands:
             f"ping{CMD_SUFFIX}",
             "p",
         ]
-        self.RestartCommand = f"restart{CMD_SUFFIX}"
+        self.RestartCommand = [
+            f"restart{CMD_SUFFIX}",
+            f"r{CMD_SUFFIX}",
+            "rall"
+        ]
         self.StatsCommand = [
             f"stats{CMD_SUFFIX}",
             "s",

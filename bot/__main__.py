@@ -4,32 +4,34 @@ from aiofiles.os import (
     remove
 )
 from asyncio import (
-    gather,
-    create_subprocess_exec
+    create_subprocess_exec,
+    gather
 )
-from os import execl as osexecl
 from nekozee.filters import command
 from nekozee.handlers import MessageHandler
-from signal import signal, SIGINT
+from os import execl as osexecl
+from signal import (
+    SIGINT,
+    signal
+)
 from sys import executable
 from time import time
 
 from bot import (
-    bot,
     LOGGER,
-    Intervals,
-    DATABASE_URL,
-    INCOMPLETE_TASK_NOTIFIER,
+    bot,
+    config_dict,
+    intervals,
     pkg_info,
     scheduler,
-    STOP_DUPLICATE_TASKS,
 )
 from .helper.ext_utils.bot_utils import (
+    create_help_buttons,
+    new_task,
     set_commands,
-    sync_to_async,
-    create_help_buttons
+    sync_to_async
 )
-from .helper.ext_utils.db_handler import DbManager
+from .helper.ext_utils.db_handler import database
 from .helper.ext_utils.files_utils import (
     clean_all,
     exit_clean_up
@@ -41,9 +43,9 @@ from .helper.telegram_helper.bot_commands import BotCommands
 from .helper.telegram_helper.filters import CustomFilters
 from .helper.telegram_helper.message_utils import (
     auto_delete_message,
-    sendMessage,
-    editMessage,
-    sendFile
+    edit_message,
+    send_file,
+    send_message
 )
 from .modules import (
     anonymous,
@@ -61,26 +63,28 @@ from .modules import (
     leech_del,
     mirror_leech,
     rmdb,
-    rss,
     shell,
     status,
-    torrent_search,
     users_settings,
     ytdlp,
 )
+import asyncio
 
-
+@new_task
 async def restart(_, message):
-    Intervals["stopAll"] = True
-    restart_message = await sendMessage(
+    sticker_message = await message.reply_sticker("CAACAgUAAxkBAAEXrSRlbwYlArKGw0lVGUGHquKMqbu3fQACLggAAmCIwVXm28BgWp1jmzME")
+    await asyncio.sleep(2)
+    await sticker_message.delete()
+    intervals["stopAll"] = True
+    restart_message = await send_message(
         message,
         "Restarting..."
     )
     if scheduler.running:
         scheduler.shutdown(wait=False)
-    if qb := Intervals["qb"]:
+    if qb := intervals["qb"]:
         qb.cancel()
-    if st := Intervals["status"]:
+    if st := intervals["status"]:
         for intvl in list(st.values()):
             intvl.cancel()
     await sync_to_async(clean_all)
@@ -111,21 +115,23 @@ async def restart(_, message):
     )
 
 
+@new_task
 async def ping(_, message):
     start_time = int(round(time() * 1000))
-    reply = await sendMessage(
+    reply = await send_message(
         message,
         "Starting Ping"
     )
     end_time = int(round(time() * 1000))
-    await editMessage(
+    await edit_message(
         reply,
-        f"<code>Pong...</code>\n<blockquote>{end_time - start_time} ms</blockquote>"
+        f"{end_time - start_time} ms"
     )
 
 
+@new_task
 async def log(_, message):
-    await sendFile(
+    await send_file(
         message,
         "Zee_Logs.txt"
     )
@@ -135,60 +141,58 @@ help_string = f"""
 <b>NOTE: Click on any CMD to see more detalis.</b>
 
 <b>Use Mirror commands for uploading to Cloud Drive:</b>
-<blockquote>/{BotCommands.MirrorCommand[0]} or /{BotCommands.MirrorCommand[1]}: Start mirroring to cloud.
+/{BotCommands.MirrorCommand[0]} or /{BotCommands.MirrorCommand[1]}: Start mirroring to cloud.
 /{BotCommands.QbMirrorCommand[0]} or /{BotCommands.QbMirrorCommand[1]}: Start Mirroring to cloud using qBittorrent.
-/{BotCommands.YtdlCommand[0]} or /{BotCommands.YtdlCommand[1]}: Mirror yt-dlp supported link.</blockquote>
+/{BotCommands.YtdlCommand[0]} or /{BotCommands.YtdlCommand[1]}: Mirror yt-dlp supported link.
 
 <b>Use Leech commands for uploading to Telegram:</b>
-<blockquote>/{BotCommands.LeechCommand[0]} or /{BotCommands.LeechCommand[1]}: Start leeching to Telegram.
+/{BotCommands.LeechCommand[0]} or /{BotCommands.LeechCommand[1]}: Start leeching to Telegram.
 /{BotCommands.QbLeechCommand[0]} or /{BotCommands.QbLeechCommand[1]}: Start leeching using qBittorrent.
-/{BotCommands.YtdlLeechCommand[0]} or /{BotCommands.YtdlLeechCommand[1]}: Leech yt-dlp supported link.</blockquote>
+/{BotCommands.YtdlLeechCommand[0]} or /{BotCommands.YtdlLeechCommand[1]}: Leech yt-dlp supported link.
 
 <b>Gdrive only commands:</b>
-<blockquote>/{BotCommands.CloneCommand} [drive_url]: Copy file/folder to Google Drive.
+/{BotCommands.CloneCommand} [drive_url]: Copy file/folder to Google Drive.
 /{BotCommands.CountCommand} [drive_url]: Count file/folder of Google Drive.
 /{BotCommands.ListCommand} [query]: Search in Google Drive(s).
-/{BotCommands.DeleteCommand} [drive_url]: Delete file/folder from Google Drive (Only Owner & Sudo).</blockquote>
+/{BotCommands.DeleteCommand} [drive_url]: Delete file/folder from Google Drive (Only Owner & Sudo).
 
 <b>Settings:</b>
-<blockquote>/{BotCommands.UserSetCommand[0]} or /{BotCommands.UserSetCommand[1]} [query]: Users settings.
+/{BotCommands.UserSetCommand[0]} or /{BotCommands.UserSetCommand[1]} [query]: Users settings.
 /{BotCommands.BotSetCommand[0]} or /{BotCommands.BotSetCommand[1]} [query]: Bot settings.
-/{BotCommands.UsersCommand}: show users settings (Only Owner & Sudo).</blockquote>
+/{BotCommands.UsersCommand}: show users settings (Only Owner & Sudo).
 
 <b>Cancel Tasks:</b>
-<blockquote>/{BotCommands.CancelTaskCommand[0]} or /{BotCommands.CancelTaskCommand[1]} [gid]: Cancel task by gid or reply.
-/{BotCommands.CancelAllCommand} [query]: Cancel all [status] tasks.</blockquote>
+/{BotCommands.CancelTaskCommand[0]} or /{BotCommands.CancelTaskCommand[1]} [gid]: Cancel task by gid or reply.
+/{BotCommands.CancelAllCommand} [query]: Cancel all [status] tasks.
 
-<b>Misc</b>
-<blockquote>/{BotCommands.SelectCommand}: Select files from torrents by gid or reply.
+/{BotCommands.SelectCommand}: Select files from torrents by gid or reply.
 /{BotCommands.SearchCommand} [query]: Search for torrents with API.
 /{BotCommands.PingCommand[0]}: Check how long it takes to Ping the Bot (Only Owner & Sudo).
-/{BotCommands.ForceStartCommand[0]} or /{BotCommands.ForceStartCommand[1]} [gid]: Force start task by gid or reply.</blockquote>
+/{BotCommands.ForceStartCommand[0]} or /{BotCommands.ForceStartCommand[1]} [gid]: Force start task by gid or reply.
 
-<b>System-Bot Stats/Status
-<blockquote>/{BotCommands.StatusCommand[0]}: Shows a status of all the downloads.
-/{BotCommands.StatsCommand[0]}: Show stats of the machine where the bot is hosted in.</blockquote>
+/{BotCommands.StatusCommand[0]}: Shows a status of all the downloads.
+/{BotCommands.StatsCommand[0]}: Show stats of the machine where the bot is hosted in.
 
 <b>Authentication:</b>
-<blockquote>/{BotCommands.AuthorizeCommand}: Authorize a chat or a user to use the bot (Only Owner & Sudo).
+/{BotCommands.AuthorizeCommand}: Authorize a chat or a user to use the bot (Only Owner & Sudo).
 /{BotCommands.UnAuthorizeCommand}: Unauthorize a chat or a user to use the bot (Only Owner & Sudo).
 /{BotCommands.AddSudoCommand}: Add sudo user (Only Owner).
-/{BotCommands.RmSudoCommand}: Remove sudo users (Only Owner).</blockquote>
+/{BotCommands.RmSudoCommand}: Remove sudo users (Only Owner).
 
 <b>Maintainance:</b>
-<blockquote>/{BotCommands.RestartCommand}: Restart and update the bot (Only Owner & Sudo).
+/{BotCommands.RestartCommand[0]}: Restart and update the bot (Only Owner & Sudo).
 /{BotCommands.LogCommand}: Get a log file of the bot. Handy for getting crash reports (Only Owner & Sudo).
 /{BotCommands.ShellCommand}: Run shell commands (Only Owner).
 /{BotCommands.AExecCommand}: Exec async functions (Only Owner).
 /{BotCommands.ExecCommand}: Exec sync functions (Only Owner).
-/{BotCommands.ClearLocalsCommand}: Clear {BotCommands.AExecCommand} or {BotCommands.ExecCommand} locals (Only Owner).</blockquote>
+/{BotCommands.ClearLocalsCommand}: Clear {BotCommands.AExecCommand} or {BotCommands.ExecCommand} locals (Only Owner).
 
-<blockquote>/{BotCommands.RssCommand}: RSS Menu.</blockquote>
+/{BotCommands.RssCommand}: RSS Menu.
 """
 
-
+@new_task
 async def bot_help(_, message):
-    hmsg = await sendMessage(
+    hmsg = await send_message(
         message,
         help_string
     )
@@ -237,8 +241,8 @@ async def restart_notification():
         except Exception as e:
             LOGGER.error(e)
 
-    if INCOMPLETE_TASK_NOTIFIER and DATABASE_URL:
-        if notifier_dict := await DbManager().get_incomplete_tasks():
+    if config_dict["INCOMPLETE_TASK_NOTIFIER"] and config_dict["DATABASE_URL"]:
+        if notifier_dict := await database.get_incomplete_tasks():
             for cid, data in notifier_dict.items():
                 msg = (
                     "Restarted Successfully!"
@@ -263,8 +267,8 @@ async def restart_notification():
                         cid,
                         msg
                     )
-        if STOP_DUPLICATE_TASKS:
-            await DbManager().clear_download_links()
+        if config_dict["STOP_DUPLICATE_TASKS"]:
+            await database.clear_download_links()
 
     if await aiopath.isfile(".restartmsg"):
         try:
@@ -279,11 +283,11 @@ async def restart_notification():
 
 
 async def main():
-    if DATABASE_URL:
-        await DbManager().db_load()
+    if config_dict["DATABASE_URL"]:
+        await database.db_load()
     await gather(
         sync_to_async(clean_all),
-        torrent_search.initiate_search_tools(),
+        bot_settings.initiate_search_tools(),
         restart_notification(),
         telegraph.create_account(),
         rclone_serve_booter(),
@@ -299,7 +303,8 @@ async def main():
         MessageHandler(
             log,
             filters=command(
-                BotCommands.LogCommand
+                BotCommands.LogCommand,
+                case_sensitive=True
             ) & CustomFilters.sudo
         )
     )
@@ -307,7 +312,8 @@ async def main():
         MessageHandler(
             restart,
             filters=command(
-                BotCommands.RestartCommand
+                BotCommands.RestartCommand,
+                case_sensitive=True
             ) & CustomFilters.sudo
         )
     )
@@ -315,7 +321,8 @@ async def main():
         MessageHandler(
             ping,
             filters=command(
-                BotCommands.PingCommand
+                BotCommands.PingCommand,
+                case_sensitive=True
             ) & CustomFilters.sudo
         )
     )
@@ -323,11 +330,12 @@ async def main():
         MessageHandler(
             bot_help,
             filters=command(
-                BotCommands.HelpCommand
+                BotCommands.HelpCommand,
+                case_sensitive=True
             ) & CustomFilters.authorized,
         )
     )
-    LOGGER.info("Jet 🚀 Bot Started Successfully!")
+    LOGGER.info("Bot Started Successfully!")
     signal(
         SIGINT,
         exit_clean_up
