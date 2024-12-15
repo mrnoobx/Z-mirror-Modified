@@ -421,10 +421,11 @@ async def update_user_settings(query):
         button
     ) = await get_user_settings(query.from_user)
     user_id = query.from_user.id
+    tpath = "https://graph.org/JetMirror-07-24-2"
     media = (
         f"Thumbnails/{user_id}.jpg"
         if os_path.exists(f"Thumbnails/{user_id}.jpg")
-        else f"{def_media(JAVA.encode()).decode()}"
+        else tpath
     )
     await query.message.edit_media(
         media=InputMediaPhoto(
@@ -449,10 +450,11 @@ async def user_settings(client, message):
         msg,
         button
     ) = await get_user_settings(from_user)
+    tpath = "https://graph.org/JetMirror-07-24-2"
     media = (
         f"Thumbnails/{user_id}.jpg"
         if os_path.exists(f"Thumbnails/{user_id}.jpg")
-        else f"{def_media(JAVA.encode()).decode()}"
+        else tpath
     )
     usetMsg = await message.reply_photo(
         media,
