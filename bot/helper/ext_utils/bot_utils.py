@@ -162,11 +162,15 @@ async def set_commands(client):
         await client.set_bot_commands([
             BotCommand(
                 f"{BotCommands.MirrorCommand[0]}",
-                "ᴍɪʀʀᴏʀ ᴅɪʀᴇᴄᴛ ʟɪɴᴋꜱ ᴜꜱɪɴɢ ᴊᴅᴏᴡɴʟᴏᴀᴅᴇʀ"
+                "ᴍɪʀʀᴏʀ ᴅɪʀᴇᴄᴛ ʟɪɴᴋꜱ ᴜꜱɪɴɢ ᴀʀɪᴀ2ᴄ"
             ),
             BotCommand(
                 f"{BotCommands.JdMirrorCommand[0]}",
-                "ᴍɪʀʀᴏʀ ᴅɪʀᴇᴄᴛ ʟɪɴᴋꜱ ᴜꜱɪɴɢ ᴀʀɪᴀ2ᴄ"
+                "ᴍɪʀʀᴏʀ ᴊᴅᴏᴡɴʟᴏᴀᴅᴇʀ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ"
+            ),
+            BotCommand(
+                f"{BotCommands.NzbMirrorCommand[0]}",
+                "ᴍɪʀʀᴏʀ ꜱᴀʙɴᴢʙᴅ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ ᴏʀ ꜰɪʟᴇꜱ"
             ),
             BotCommand(
                 f"{BotCommands.QbMirrorCommand[0]}",
@@ -181,12 +185,16 @@ async def set_commands(client):
                 "ʟᴇᴇᴄʜ ᴅɪʀᴇᴄᴛ ʟɪɴᴋꜱ ᴜꜱɪɴɢ ᴀʀɪᴀ2ᴄ"
             ),
             BotCommand(
-                f"{BotCommands.QbLeechCommand[0]}",
-                "ʟᴇᴇᴄʜ Qʙɪᴛ-ᴛᴏʀʀᴇɴᴛ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ ᴏʀ ꜰɪʟᴇꜱ"
+                f"{BotCommands.JdLeechCommand[0]}",
+                "ʟᴇᴇᴄʜ ᴊᴅᴏᴡɴʟᴏᴀᴅᴇʀ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ"
             ),
             BotCommand(
-                f"{BotCommands.JdLeechCommand[0]}",
-                "ʟᴇᴇᴄʜ ᴅɪʀᴇᴄᴛ ʟɪɴᴋꜱ ᴜꜱɪɴɢ ᴊᴅᴏᴡɴʟᴏᴀᴅᴇʀ"
+                f"{BotCommands.NzbLeechCommand[0]}",
+                "ʟᴇᴇᴄʜ ꜱᴀʙɴᴢʙᴅ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ ᴏʀ ꜰɪʟᴇꜱ"
+            ),
+            BotCommand(
+                f"{BotCommands.QbLeechCommand[0]}",
+                "ʟᴇᴇᴄʜ Qʙɪᴛ-ᴛᴏʀʀᴇɴᴛ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ ᴏʀ ꜰɪʟᴇꜱ"
             ),
             BotCommand(
                 f"{BotCommands.YtdlLeechCommand[0]}",
