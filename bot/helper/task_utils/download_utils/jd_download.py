@@ -1,7 +1,7 @@
 from asyncio import wait_for, Event, sleep
 from functools import partial
-from pyrogram.filters import regex, user
-from pyrogram.handlers import CallbackQueryHandler
+from nekozee.filters import regex, user
+from nekozee.handlers import CallbackQueryHandler
 from time import time
 from aiofiles.os import path as aiopath, remove
 from aiofiles import open as aiopen
