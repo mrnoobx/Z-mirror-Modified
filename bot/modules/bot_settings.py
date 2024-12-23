@@ -44,6 +44,7 @@ from bot import (
     global_extension_filter,
     index_urls,
     intervals,
+    jd_lock,
     qbit_options,
     qbittorrent_client,
     shorteneres_list,
@@ -56,6 +57,7 @@ from ..helper.ext_utils.bot_utils import (
     set_commands,
     sync_to_async
 )
+from ..helper.ext_utils.jdownloader_booter import jdownloader
 from ..helper.ext_utils.db_handler import database
 from ..helper.ext_utils.status_utils import get_readable_file_size
 from ..helper.ext_utils.task_manager import start_from_queued
@@ -103,6 +105,10 @@ async def get_buttons(id=None, key=None, edit_type=None):
             "botset qbit"
         )
         buttons.data_button(
+            "ᴊᴅᴏᴡɴʟᴏᴀᴅᴇʀ\nꜱʏɴᴄ",
+            "botset syncjd"
+        )
+        buttons.data_button(
             "ᴀʀɪᴀ2ᴄ\nꜱᴇᴛᴛɪɴɢꜱ",
             "botset aria"
         )
@@ -143,6 +149,7 @@ async def get_buttons(id=None, key=None, edit_type=None):
                 "AUTHORIZED_CHATS",
                 "DATABASE_URL",
                 "BOT_TOKEN",
+                "JD_PASS",
                 "DOWNLOAD_DIR",
             ]:
                 msg += "<b>Restart required for this edit to take effect!</b>\n\n"
@@ -487,6 +494,11 @@ async def edit_variable(message, pre_message, key):
         "RCLONE_SERVE_PASS",
     ]:
         await rclone_serve_booter()
+    elif key in [
+        "JD_EMAIL",
+        "JD_PASS"
+    ]:
+        await jdownloader.boot()
     elif key == "RSS_DELAY":
         add_job()
     elif key == "SET_COMMANDS":
@@ -565,6 +577,27 @@ async def edit_qbit(message, pre_message, key):
             key,
             value
         )
+
+async def sync_jdownloader():
+    async with jd_lock:
+        if (
+            not config_dict["DATABASE_URL"] or
+            not jdownloader.is_connected
+        ):
+            return
+        await jdownloader.device.system.exit_jd()
+    if await aiopath.exists("cfg.zip"):
+        await remove("cfg.zip")
+    await (
+        await create_subprocess_exec(
+            "7z",
+            "a",
+            "-bso0",
+            "cfg.zip",
+            "/JDownloader/cfg"
+        )
+    ).wait()
+    await database.update_private_file("cfg.zip")
 
 @new_task
 async def update_private_file(message, pre_message):
@@ -795,6 +828,21 @@ async def edit_bot_settings(client, query):
             message,
             None
         )
+    elif data[1] == "syncjd":
+        if (
+            not config_dict["JD_EMAIL"]
+            or not config_dict["JD_PASS"]
+        ):
+            await query.answer(
+                "No Email or Password provided!",
+                show_alert=True,
+            )
+            return
+        await query.answer(
+            "Syncronization Started. JDownloader will get restarted. It takes up to 10 sec!",
+            show_alert=True,
+        )
+        await sync_jdownloader()
     elif data[1] in [
         "var",
         "aria",
@@ -868,6 +916,16 @@ async def edit_bot_settings(client, query):
             and config_dict["DATABASE_URL"]
         ):
             await database.trunc_table("tasks")
+        elif data[2] in [
+            "JD_EMAIL",
+            "JD_PASS"
+        ]:
+            await create_subprocess_exec(
+                "pkill",
+                "-9",
+                "-f",
+                "java"
+            )
         config_dict[data[2]] = value
         await update_buttons(
             message,
@@ -1030,6 +1088,7 @@ async def edit_bot_settings(client, query):
             "USER_SESSION_STRING",
             "MEGA_PASSWORD",
             "BOT_TOKEN",
+            "JD_PASS",
             "USENET_SERVERS"
         ] and not await CustomFilters.owner(
             client,
@@ -1338,6 +1397,21 @@ async def load_config():
             if x.strip().startswith("."):
                 x = x.lstrip(".")
             global_extension_filter.append(x.strip().lower())
+
+    JD_EMAIL = environ.get(
+        "JD_EMAIL",
+        ""
+    )
+    JD_PASS = environ.get(
+        "JD_PASS",
+        ""
+    )
+    if (
+        len(JD_EMAIL) == 0 or
+        len(JD_PASS) == 0
+    ):
+        JD_EMAIL = ""
+        JD_PASS = ""
 
     FILELION_API = environ.get(
         "FILELION_API",
@@ -1988,6 +2062,16 @@ async def load_config():
         else float(LEECH_LIMIT)
     )
 
+    JD_LIMIT = environ.get(
+        "JD_LIMIT",
+        ""
+    )
+    JD_LIMIT = (
+        ""
+        if len(JD_LIMIT) == 0
+        else float(JD_LIMIT)
+    )
+
     AVG_SPEED = environ.get(
         "AVG_SPEED",
         ""
@@ -2108,6 +2192,7 @@ async def load_config():
             "MEGA_LIMIT": MEGA_LIMIT,
             "MINIMUM_DURATOIN": MINIMUM_DURATOIN,
             "LEECH_LIMIT": LEECH_LIMIT,
+            "JD_LIMIT": JD_LIMIT,
             "SET_COMMANDS": SET_COMMANDS,
             "MEGA_EMAIL": MEGA_EMAIL,
             "MEGA_PASSWORD": MEGA_PASSWORD,
@@ -2126,6 +2211,8 @@ async def load_config():
             "INCOMPLETE_TASK_NOTIFIER": INCOMPLETE_TASK_NOTIFIER,
             "INDEX_URL": INDEX_URL,
             "IS_TEAM_DRIVE": IS_TEAM_DRIVE,
+            "JD_EMAIL": JD_EMAIL,
+            "JD_PASS": JD_PASS,
             "USER_LEECH_DESTINATION": USER_LEECH_DESTINATION,
             "LEECH_FILENAME_PREFIX": LEECH_FILENAME_PREFIX,
             "LEECH_FILENAME_SUFFIX": LEECH_FILENAME_SUFFIX,

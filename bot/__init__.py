@@ -85,9 +85,11 @@ load_dotenv(
 intervals = {
     "status": {},
     "qb": "",
+    "jd": "",
     "stopAll": False
 }
 qb_torrents = {}
+jd_downloads = {}
 
 drives_names = []
 drives_ids = []
@@ -120,6 +122,7 @@ except:
 task_dict_lock = Lock()
 queue_dict_lock = Lock()
 qb_listener_lock = Lock()
+jd_lock = Lock()
 cpu_eater_lock = Lock()
 subprocess_lock = Lock()
 same_directory_lock = Lock()
@@ -218,6 +221,20 @@ if DATABASE_URL:
         LOGGER.error(f"Database ERROR: {e}")
 else:
     config_dict = {}
+
+if ospath.exists("cfg.zip"):
+    if ospath.exists("/JDownloader/cfg"):
+        rmtree(
+            "/JDownloader/cfg",
+            ignore_errors=True
+        )
+    hrun([
+        "7z",
+        "x",
+        "cfg.zip",
+        "-o/JDownloader"
+    ])
+    remove("cfg.zip")
 
 if not ospath.exists(".netrc"):
     with open(
@@ -355,6 +372,21 @@ if len(EXTENSION_FILTER) > 0:
     for x in fx:
         x = x.lstrip(".")
         global_extension_filter.append(x.strip().lower())
+
+JD_EMAIL = environ.get(
+    "JD_EMAIL",
+    ""
+)
+JD_PASS = environ.get(
+    "JD_PASS",
+    ""
+)
+if (
+    len(JD_EMAIL) == 0 or
+    len(JD_PASS) == 0
+):
+    JD_EMAIL = ""
+    JD_PASS = ""
 
 FILELION_API = environ.get(
     "FILELION_API",
@@ -952,6 +984,16 @@ LEECH_LIMIT = (
     else float(LEECH_LIMIT)
 )
 
+JD_LIMIT = environ.get(
+    "JD_LIMIT",
+    ""
+)
+JD_LIMIT = (
+    ""
+    if len(JD_LIMIT) == 0
+    else float(JD_LIMIT)
+)
+
 AVG_SPEED = environ.get(
     "AVG_SPEED",
     ""
@@ -1027,6 +1069,9 @@ config_dict = {
     "INCOMPLETE_TASK_NOTIFIER": INCOMPLETE_TASK_NOTIFIER,
     "INDEX_URL": INDEX_URL,
     "IS_TEAM_DRIVE": IS_TEAM_DRIVE,
+    "JD_EMAIL": JD_EMAIL,
+    "JD_PASS": JD_PASS,
+    "JD_LIMIT": JD_LIMIT,
     "LEECH_FILENAME_PREFIX": LEECH_FILENAME_PREFIX,
     "LEECH_FILENAME_SUFFIX": LEECH_FILENAME_SUFFIX,
     "LEECH_CAPTION_FONT": LEECH_CAPTION_FONT,

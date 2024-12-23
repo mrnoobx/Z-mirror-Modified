@@ -273,6 +273,7 @@ async def limit_checker(
         is_torrent=False,
         is_mega=False,
         is_drive_link=False,
+        is_jd=False,
         is_rclone=False,
     ):
     try:
@@ -316,6 +317,11 @@ async def limit_checker(
             is_mega,
             "MEGA_LIMIT",
             "Mega"
+        ),
+        (
+            is_jd,
+            "JD_LIMIT",
+            "Jdownloader"
         ),
         (
             is_drive_link,

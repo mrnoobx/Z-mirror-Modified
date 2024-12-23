@@ -34,6 +34,7 @@ from ..helper.task_utils.download_utils.direct_downloader import add_direct_down
 from ..helper.task_utils.download_utils.direct_link_generator import direct_link_generator
 from ..helper.task_utils.download_utils.gd_download import add_gd_download
 from ..helper.task_utils.download_utils.mega_download import add_mega_download
+from ..helper.task_utils.download_utils.jd_download import add_jd_download
 from ..helper.task_utils.download_utils.qbit_download import add_qb_torrent
 from ..helper.task_utils.download_utils.rclone_download import add_rclone_download
 from ..helper.task_utils.download_utils.telegram_download import TelegramDownloadHelper
@@ -55,6 +56,7 @@ class Mirror(TaskListener):
         message,
         is_qbit=False,
         is_leech=False,
+        is_jd=False,
         same_dir=None,
         bulk=None,
         multi_tag=None,
@@ -73,6 +75,7 @@ class Mirror(TaskListener):
         super().__init__()
         self.is_qbit = is_qbit
         self.is_leech = is_leech
+        self.is_jd = is_jd
         self.file_ = None
 
     async def new_event(self):
@@ -315,6 +318,7 @@ class Mirror(TaskListener):
                 nextmsg,
                 self.is_qbit,
                 self.is_leech,
+                self.is_jd,
                 self.same_dir,
                 self.bulk,
                 self.multi_tag,
@@ -402,7 +406,8 @@ class Mirror(TaskListener):
             return
 
         if (
-            not self.is_qbit
+            not self.is_jd
+            and not self.is_qbit
             and not is_magnet(self.link)
             and not is_rclone_path(self.link)
             and not is_gdrive_link(self.link)
@@ -468,6 +473,11 @@ class Mirror(TaskListener):
                 ratio,
                 seed_time
             )
+        elif self.is_jd:
+            await add_jd_download(
+                self,
+                path
+            )
         elif is_rclone_path(str(self.link)):
             await add_rclone_download(
                 self,
@@ -517,6 +527,12 @@ async def qb_mirror(client, message):
         is_qbit=True
     ).new_event()) # type: ignore
 
+async def jd_mirror(client, message):
+    bot_loop.create_task(Mirror(
+        client,
+        message,
+        is_jd=True
+    ).new_event()) # type: ignore
 
 async def leech(client, message):
     bot_loop.create_task(Mirror(
@@ -532,6 +548,14 @@ async def qb_leech(client, message):
         message,
         is_qbit=True,
         is_leech=True
+    ).new_event()) # type: ignore
+
+async def jd_leech(client, message):
+    bot_loop.create_task(Mirror(
+        client,
+        message,
+        is_leech=True,
+        is_jd=True
     ).new_event()) # type: ignore
 
 
@@ -569,5 +593,22 @@ bot.add_handler( # type: ignore
             BotCommands.QbLeechCommand,
             case_sensitive=True
         ) & CustomFilters.authorized
+    )
+)
+bot.add_handler( # type: ignore
+    MessageHandler(
+        jd_mirror,
+        filters=command(
+            BotCommands.JdMirrorCommand,
+            case_sensitive=True
+        ) & CustomFilters.authorized,
+    )
+)
+bot.add_handler( # type: ignore
+    MessageHandler(
+        jd_leech,
+        filters=command(
+            BotCommands.JdLeechCommand
+        )
     )
 )

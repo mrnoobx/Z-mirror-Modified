@@ -541,6 +541,7 @@ async def send_bot_limits(_, query):
     buttons = ButtonMaker()
     DIR = "Unlimited" if config_dict["DIRECT_LIMIT"] == "" else config_dict["DIRECT_LIMIT"]
     YTD = "Unlimited" if config_dict["YTDLP_LIMIT"] == "" else config_dict["YTDLP_LIMIT"]
+    JDL = "Unlimited" if config_dict["JD_LIMIT"] == "" else config_dict["JD_LIMIT"]
     YTP = "Unlimited" if config_dict["PLAYLIST_LIMIT"] == "" else config_dict["PLAYLIST_LIMIT"]
     GDL = "Unlimited" if config_dict["GDRIVE_LIMIT"] == "" else config_dict["GDRIVE_LIMIT"]
     TOR = "Unlimited" if config_dict["TORRENT_LIMIT"] == "" else config_dict["TORRENT_LIMIT"]
@@ -557,6 +558,7 @@ async def send_bot_limits(_, query):
                 f"<code>Yt-Dlp    : {YTD}</code> <b>GB</b>\n" \
                 f"<code>Playlist  : {YTP}</code> <b>NO</b>\n" \
                 f"<code>Direct    : {DIR}</code> <b>GB</b>\n" \
+                f"<code>JDownL    : {JDL}</code> <b>GB</b>\n" \
                 f"<code>Clone     : {CLL}</code> <b>GB</b>\n" \
                 f"<code>Rclone    : {RCL}</code> <b>GB</b>\n" \
                 f"<code>Leech     : {TGL}</code> <b>GB</b>\n" \
@@ -602,9 +604,8 @@ bot.add_handler( # type: ignore
     MessageHandler(
         stats,
         filters=command(
-            BotCommands.StatsCommand,
-            case_sensitive=True
-        ) & CustomFilters.authorized
+            BotCommands.StatsCommand
+        )
     )
 )
 

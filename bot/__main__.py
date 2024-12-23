@@ -36,6 +36,7 @@ from .helper.ext_utils.files_utils import (
     clean_all,
     exit_clean_up
 )
+from .helper.ext_utils.jdownloader_booter import jdownloader
 from .helper.ext_utils.telegraph_helper import telegraph
 from .helper.listeners.aria2_listener import start_aria2_listener
 from .helper.task_utils.rclone_utils.serve import rclone_serve_booter
@@ -84,6 +85,8 @@ async def restart(_, message):
         scheduler.shutdown(wait=False)
     if qb := intervals["qb"]:
         qb.cancel()
+    if jd := intervals["jd"]:
+        jd.cancel()
     if st := intervals["status"]:
         for intvl in list(st.values()):
             intvl.cancel()
@@ -143,11 +146,13 @@ help_string = f"""
 <b>Use Mirror commands for uploading to Cloud Drive:</b>
 /{BotCommands.MirrorCommand[0]} or /{BotCommands.MirrorCommand[1]}: Start mirroring to cloud.
 /{BotCommands.QbMirrorCommand[0]} or /{BotCommands.QbMirrorCommand[1]}: Start Mirroring to cloud using qBittorrent.
+/{BotCommands.JdMirrorCommand[0]} or /{BotCommands.JdMirrorCommand[1]}: Start Mirroring to cloud using JDownloader.
 /{BotCommands.YtdlCommand[0]} or /{BotCommands.YtdlCommand[1]}: Mirror yt-dlp supported link.
 
 <b>Use Leech commands for uploading to Telegram:</b>
 /{BotCommands.LeechCommand[0]} or /{BotCommands.LeechCommand[1]}: Start leeching to Telegram.
 /{BotCommands.QbLeechCommand[0]} or /{BotCommands.QbLeechCommand[1]}: Start leeching using qBittorrent.
+/{BotCommands.JdLeechCommand[0]} or /{BotCommands.JdLeechCommand[1]}: Start leeching using JDownloader.
 /{BotCommands.YtdlLeechCommand[0]} or /{BotCommands.YtdlLeechCommand[1]}: Leech yt-dlp supported link.
 
 <b>Gdrive only commands:</b>
@@ -286,6 +291,7 @@ async def main():
     if config_dict["DATABASE_URL"]:
         await database.db_load()
     await gather(
+        jdownloader.boot(),
         sync_to_async(clean_all),
         bot_settings.initiate_search_tools(),
         restart_notification(),
