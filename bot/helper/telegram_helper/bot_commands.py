@@ -16,10 +16,6 @@ class _BotCommands:
             f"jdmirror{CMD_SUFFIX}",
             f"jdm{CMD_SUFFIX}",
         ]
-        self.NzbMirrorCommand = [
-            f"nzbmirror{CMD_SUFFIX}",
-            f"nzbm{CMD_SUFFIX}",
-        ]
         self.YtdlCommand = [
             f"ytdlm{CMD_SUFFIX}",
             f"ytm{CMD_SUFFIX}",
@@ -35,10 +31,6 @@ class _BotCommands:
         self.JdLeechCommand = [
             f"jdleech{CMD_SUFFIX}",
             f"jdl{CMD_SUFFIX}",
-        ]
-        self.NzbLeechCommand = [
-            f"nzbleech{CMD_SUFFIX}",
-            f"nzbl{CMD_SUFFIX}",
         ]
         self.YtdlLeechCommand = [
             f"ytdlleech{CMD_SUFFIX}",

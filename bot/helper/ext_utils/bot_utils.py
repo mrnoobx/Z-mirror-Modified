@@ -169,10 +169,6 @@ async def set_commands(client):
                 "ᴍɪʀʀᴏʀ ᴊᴅᴏᴡɴʟᴏᴀᴅᴇʀ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ"
             ),
             BotCommand(
-                f"{BotCommands.NzbMirrorCommand[0]}",
-                "ᴍɪʀʀᴏʀ ꜱᴀʙɴᴢʙᴅ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ ᴏʀ ꜰɪʟᴇꜱ"
-            ),
-            BotCommand(
                 f"{BotCommands.QbMirrorCommand[0]}",
                 "ᴍɪʀʀᴏʀ Qʙɪᴛ-ᴛᴏʀʀᴇɴᴛ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ ᴏʀ ꜰɪʟᴇꜱ"
             ),
@@ -187,10 +183,6 @@ async def set_commands(client):
             BotCommand(
                 f"{BotCommands.JdLeechCommand[0]}",
                 "ʟᴇᴇᴄʜ ᴊᴅᴏᴡɴʟᴏᴀᴅᴇʀ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ"
-            ),
-            BotCommand(
-                f"{BotCommands.NzbLeechCommand[0]}",
-                "ʟᴇᴇᴄʜ ꜱᴀʙɴᴢʙᴅ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ ᴏʀ ꜰɪʟᴇꜱ"
             ),
             BotCommand(
                 f"{BotCommands.QbLeechCommand[0]}",
