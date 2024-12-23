@@ -162,6 +162,10 @@ async def set_commands(client):
         await client.set_bot_commands([
             BotCommand(
                 f"{BotCommands.MirrorCommand[0]}",
+                "ᴍɪʀʀᴏʀ ᴅɪʀᴇᴄᴛ ʟɪɴᴋꜱ ᴜꜱɪɴɢ ᴊᴅᴏᴡɴʟᴏᴀᴅᴇʀ"
+            ),
+            BotCommand(
+                f"{BotCommands.JdMirrorCommand[0]}",
                 "ᴍɪʀʀᴏʀ ᴅɪʀᴇᴄᴛ ʟɪɴᴋꜱ ᴜꜱɪɴɢ ᴀʀɪᴀ2ᴄ"
             ),
             BotCommand(
@@ -179,6 +183,10 @@ async def set_commands(client):
             BotCommand(
                 f"{BotCommands.QbLeechCommand[0]}",
                 "ʟᴇᴇᴄʜ Qʙɪᴛ-ᴛᴏʀʀᴇɴᴛ ꜱᴜᴘᴘᴏʀᴛᴇᴅ ʟɪɴᴋꜱ ᴏʀ ꜰɪʟᴇꜱ"
+            ),
+            BotCommand(
+                f"{BotCommands.JdLeechCommand[0]}",
+                "ʟᴇᴇᴄʜ ᴅɪʀᴇᴄᴛ ʟɪɴᴋꜱ ᴜꜱɪɴɢ ᴊᴅᴏᴡɴʟᴏᴀᴅᴇʀ"
             ),
             BotCommand(
                 f"{BotCommands.YtdlLeechCommand[0]}",

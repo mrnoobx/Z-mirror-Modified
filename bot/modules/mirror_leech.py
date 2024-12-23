@@ -608,7 +608,8 @@ bot.add_handler( # type: ignore
     MessageHandler(
         jd_leech,
         filters=command(
-            BotCommands.JdLeechCommand
-        )
+            BotCommands.JdLeechCommand,
+            case_sensitive=True
+        ) & CustomFilters.authorized,
     )
 )
