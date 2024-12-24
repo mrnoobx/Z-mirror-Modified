@@ -733,10 +733,10 @@ class TaskListener(TaskConfig):
             msg,
             button
         )
-        await auto_delete_message(
-            self.message, # type: ignore
-            tlmsg
-        )
+        # await auto_delete_message(
+        #     self.message, # type: ignore
+        #     tlmsg
+        # )
         if self.log_message:
             await send_message(
                 self.log_message,
@@ -807,10 +807,10 @@ class TaskListener(TaskConfig):
             self.message, # type: ignore
             msg
         )
-        await auto_delete_message(
-            self.message, # type: ignore
-            tlmsg
-        )
+        # await auto_delete_message(
+        #     self.message, # type: ignore
+        #     tlmsg
+        # )
         if self.log_message:
             await send_message(
                 self.log_message,
