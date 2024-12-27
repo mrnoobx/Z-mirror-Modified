@@ -997,7 +997,7 @@ THUMBNAIL_LAYOUT = (
 )
 
 MULTI_DELAY = environ.get("MULTI_DELAY", "")
-MULTI_DELAY = "" if len(MULTI_DELAY) == 0 else int(MULTI_DELAY)
+MULTI_DELAY = "7" if len(MULTI_DELAY) == 0 else int(MULTI_DELAY)
 
 config_dict = {
     "AS_DOCUMENT": AS_DOCUMENT,
