@@ -786,7 +786,8 @@ class TaskConfig:
                 smsg
             )
             return
-        await sleep(7)
+        delay = int(config_dict["MULTI_DELAY"])
+        await sleep(delay) #Delay For Multi
         if (
             not self.multi_tag
             and self.multi > 1

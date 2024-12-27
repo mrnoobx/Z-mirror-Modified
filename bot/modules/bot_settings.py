@@ -2019,6 +2019,9 @@ async def load_config():
         MEGA_EMAIL = ""
         MEGA_PASSWORD = ""
 
+    MULTI_DELAY = environ.get("MULTI_DELAY", "")
+    MULTI_DELAY = "" if len(MULTI_DELAY) == 0 else int(MULTI_DELAY)
+
     drives_ids.clear()
     drives_names.clear()
     index_urls.clear()
@@ -2135,6 +2138,7 @@ async def load_config():
             "MIXED_LEECH": MIXED_LEECH,
             "METADATA_TXT": METADATA_TXT,
             "META_ATTACHMENT": META_ATTACHMENT,
+            "MULTI_DELAY": MULTI_DELAY,
             "NAME_SUBSTITUTE": NAME_SUBSTITUTE,
             "OWNER_ID": OWNER_ID,
             "QUEUE_ALL": QUEUE_ALL,

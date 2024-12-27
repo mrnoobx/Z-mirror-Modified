@@ -296,7 +296,6 @@ class Mirror(TaskListener):
             b_msg = input_list[:1]
             self.options = " ".join(input_list[1:])
             b_msg.append(f"{self.bulk[0]} -m {len(self.bulk)} {self.options}")
-            await asyncio.sleep(20) #testing 
             nextmsg = await send_message(
                 self.message,
                 " ".join(b_msg)
