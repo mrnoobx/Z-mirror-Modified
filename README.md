@@ -17,22 +17,18 @@
 - `TELEGRAM_API`: This is to authenticate your Telegram account for downloading Telegram files. You can get this from **<https://my.telegram.org>**. `Int`
 - `TELEGRAM_HASH`: This is to authenticate your Telegram account for downloading Telegram files. You can get this from **<https://my.telegram.org>**. `Str`
 
-- `BASE_URL`: Add a valid `BASE URL` to use torrent selection. Copy it from your heroku app. Right click on `OPEN APP` and copy link address. Format of URL should be `https://APPNAME-IDENTIFIER.herokuapp.com/`, where `APPNAME` is the name of your heroku app and IDENTIFIER is an unic number. Example: `https://ZeeApp1-mjw69x6ex696.herokuapp.com/`. `Str`
+- `BASE_URL`: Add a valid `BASE URL` to use torrent selection. Copy it from your heroku app. Right click on `OPEN APP` and copy link address. Format of URL should be `https://APPNAME-IDENTIFIER.herokuapp.com/`, where `APPNAME` is the name of your heroku app and IDENTIFIER is an unic number. Example: `https://JetApp1-mjw69x6ex696.herokuapp.com/`. `Str`
 - `TORRENT_TIMEOUT`: Timeout of dead torrents downloading with qBittorrent and Aria2c in seconds. `Int`
 
 ---
-### For farther assistance visit my support group: [**@Z_Mirror**](https://telegram.me/z_mirror).
+### For farther assistance visit my support group: [**@JetMirror**](https://telegram.me/JetMirror).
 ---
 
 ## Deploy using CLI
 
-- Deployment instructions uploaded [**HERE**](https://gist.github.com/Dawn-India/9be1ca66b392dee82bcbc8d7f7ebefe8)
+- Deployment instructions uploaded [**HERE**](https://gist.github.com/Hrishi2861/8f0414b8c71d479d85e06de9891439ad)
 - Carefully copy-paste every CMD one by one. If you miss maybe your BOT will not run.
 
 ## Deploy using Google Colab
 
-- Visit this [**LINK**](https://shorturl.at/pCLN5) and follow on-screen instructions.
-
----
-### Demo BOT available here: [**@Z_Mirror**](https://telegram.me/z_mirror).
----
+- Visit this [**LINK**](https://shorturl.at/N1Azt) and follow on-screen instructions.
