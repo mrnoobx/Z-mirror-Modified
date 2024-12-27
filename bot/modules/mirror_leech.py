@@ -1,7 +1,7 @@
 from aiofiles.os import path as aiopath
 from base64 import b64encode
 from re import match as re_match
-
+import asyncio
 from nekozee.filters import command
 from nekozee.handlers import MessageHandler
 
@@ -295,6 +295,7 @@ class Mirror(TaskListener):
             self.bulk = reply_to
             b_msg = input_list[:1]
             self.options = " ".join(input_list[1:])
+            await asyncio.sleep(20) #testing 
             b_msg.append(f"{self.bulk[0]} -m {len(self.bulk)} {self.options}")
             nextmsg = await send_message(
                 self.message,
