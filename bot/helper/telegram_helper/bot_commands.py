@@ -45,6 +45,7 @@ class _BotCommands:
         self.StatusCommand = [
             f"status{CMD_SUFFIX}",
             "sall",
+            f"s{CMD_SUFFIX}"
         ]
         self.UsersCommand = f"users{CMD_SUFFIX}"
         self.AuthorizeCommand = f"authorize{CMD_SUFFIX}"
