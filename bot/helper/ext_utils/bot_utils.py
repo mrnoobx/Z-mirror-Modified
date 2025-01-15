@@ -122,7 +122,7 @@ def bt_selection_buttons(id_):
     if config_dict["WEB_PINCODE"]:
         buttons.url_button(
             "ꜱᴇʟᴇᴄᴛ ꜰɪʟᴇꜱ",
-            f"{BASE_URL}/app/files/{id_}"
+            f"{BASE_URL}/app/files?gid={id_}"
         )
         buttons.data_button(
             "ᴘɪɴᴄᴏᴅᴇ",
@@ -131,7 +131,7 @@ def bt_selection_buttons(id_):
     else:
         buttons.url_button(
             "ꜱᴇʟᴇᴄᴛ ꜰɪʟᴇꜱ",
-            f"{BASE_URL}/app/files/{id_}?pin_code={pincode}"
+            f"{BASE_URL}/app/files?gid={id_}&pin={pincode}"
         )
     buttons.data_button(
         "ᴅᴏɴᴇ ꜱᴇʟᴇᴄᴛɪɴɢ",
