@@ -461,7 +461,7 @@ Timeout: 60 sec
         buttons.ibutton("Back", f"userset {user_id} back")
         buttons.ibutton("Close", f"userset {user_id} close")
         metamsg = '''
-Send METADATA Text(Ex: By @JetMirror).
+Send METADATA Text (Ex: By @JetMirror).
 
 Timeout: 60 sec
 '''
