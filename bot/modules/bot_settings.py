@@ -399,6 +399,10 @@ async def load_config():
     else:
         TOKEN_TIMEOUT = ''
 
+    METADATA = environ.get('METADATA', '')
+    if len(METADATA) == 0:
+        METADATA = ''
+
     list_drives_dict.clear()
     categories_dict.clear()
 
@@ -510,6 +514,7 @@ async def load_config():
                         'MEDIA_GROUP': MEDIA_GROUP,
                         'MEGA_EMAIL': MEGA_EMAIL,
                         'MEGA_PASSWORD': MEGA_PASSWORD,
+                        'METADATA': METADATA,
                         'OWNER_ID': OWNER_ID,
                         'QUEUE_ALL': QUEUE_ALL,
                         'QUEUE_DOWNLOAD': QUEUE_DOWNLOAD,

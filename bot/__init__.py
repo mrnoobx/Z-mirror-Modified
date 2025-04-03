@@ -442,6 +442,10 @@ USER_DUMP = '' if len(USER_DUMP) == 0 else USER_DUMP
 if USER_DUMP.isdigit() or USER_DUMP.startswith('-'):
     USER_DUMP = int(USER_DUMP)
 
+METADATA = environ.get('METADATA', '')
+if len(METADATA) == 0:
+    METADATA = ''
+
 config_dict = {
     "AS_DOCUMENT": AS_DOCUMENT,
     "AUTHORIZED_CHATS": AUTHORIZED_CHATS,
@@ -468,6 +472,7 @@ config_dict = {
     "MEDIA_GROUP": MEDIA_GROUP,
     "MEGA_EMAIL": MEGA_EMAIL,
     "MEGA_PASSWORD": MEGA_PASSWORD,
+    "METADATA": METADATA,
     "OWNER_ID": OWNER_ID,
     "QUEUE_ALL": QUEUE_ALL,
     "QUEUE_DOWNLOAD": QUEUE_DOWNLOAD,

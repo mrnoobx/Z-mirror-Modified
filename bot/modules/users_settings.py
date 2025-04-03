@@ -88,6 +88,14 @@ async def get_user_settings(from_user):
     else:
         user_dump = 'None'
 
+    buttons.ibutton("Metadata", f"userset {user_id} meta")
+    if user_dict.get('metadata', False):
+        metadata = user_dict['metadata']
+    elif 'metadata' not in user_dict and (MD := config_dict['METADATA']):
+        metadata = MD
+    else:
+        metadata = 'None'
+
     buttons.ibutton("Leech Remove Unwanted", f"userset {user_id} lremname")
     if user_dict.get('lremname', False):
         lremname = user_dict['lremname']
@@ -118,6 +126,7 @@ async def get_user_settings(from_user):
 <code>Rclone Config    :</code> <b>{rccmsg}</b>
 
 <code>User Dump        :</code> <b>{user_dump}</b>
+<code>Metadata         :</code> <b>{metadata}</b>
 <code>Remove Unwanted  :</code> <b>{lremname}</b>
 """
     return text, buttons.build_menu(1)
@@ -214,6 +223,16 @@ async def set_user_dump(_, message, pre_event):
     if value.isdigit() or value.startswith('-'):
         value = int(value)
     update_user_ldata(user_id, 'user_dump', value)
+    await message.delete()
+    await update_user_settings(pre_event)
+    if DATABASE_URL:
+        await DbManager().update_user_data(user_id)
+
+async def set_meta_text(_, message, pre_event):
+    user_id = message.from_user.id
+    handler_dict[user_id] = False
+    value = message.text
+    update_user_ldata(user_id, 'metadata', value)
     await message.delete()
     await update_user_settings(pre_event)
     if DATABASE_URL:
@@ -434,6 +453,28 @@ Timeout: 60 sec
         await editMessage(message, udmsg, buttons.build_menu(1))
         pfunc = partial(set_user_dump, pre_event=query)
         await event_handler(client, query, pfunc)
+    elif data[2] == 'meta':
+        await query.answer()
+        buttons = ButtonMaker()
+        if user_dict.get('metadata', False) or 'metadata' not in user_dict and config_dict['METADATA']:
+            buttons.ibutton("Remove METADATA",f"userset {user_id} rmmeta")
+        buttons.ibutton("Back", f"userset {user_id} back")
+        buttons.ibutton("Close", f"userset {user_id} close")
+        metamsg = '''
+Send METADATA Text(Ex: By @JetMirror).
+
+Timeout: 60 sec
+'''
+        await editMessage(message, metamsg, buttons.build_menu(1))
+        pfunc = partial(set_meta_text, pre_event=query)
+        await event_handler(client, query, pfunc) 
+    elif data[2] == 'rmmeta':
+        handler_dict[user_id] = False
+        await query.answer()
+        update_user_ldata(user_id, 'metadata', '')
+        await update_user_settings(query)
+        if DATABASE_URL:
+            await DbManager().update_user_data(user_id)       
     elif data[2] == 'rudump':
         handler_dict[user_id] = False
         await query.answer()
