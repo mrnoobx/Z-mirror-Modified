@@ -1,6 +1,10 @@
 from bot import LOGGER
-from bot.helper.ext_utils.bot_utils import EngineStatus, get_readable_file_size, MirrorStatus
+from bot.helper.ext_utils.bot_utils import get_readable_file_size, MirrorStatus
 from subprocess import run as frun
+
+def _eng_ver():
+        _engine = frun(['render', '-version'], capture_output=True, text=True)
+        return _engine.stdout.split('\n')[0].split(' ')[2].split('ubuntu')[0]
 
 class MetadataStatus:
     def __init__(self, name, size, gid, listener):
@@ -10,18 +14,7 @@ class MetadataStatus:
         self.__listener = listener
         self.upload_details = listener.upload_details
         self.message = listener.message
-        self.engine = f"FFmpeg v{self._eng_ver()}"
-
-    def _eng_ver(self):
-        _engine = frun(
-            [
-                "render",
-                "-version"
-            ],
-            capture_output=True,
-            text=True
-        )
-        return _engine.stdout.split("\n")[0].split(" ")[2].split("-")[0]
+        self.engine = f'FFmpeg v{_eng_ver()}'
 
     def gid(self):
         return self.__gid
@@ -59,7 +52,3 @@ class MetadataStatus:
                 pass
         self.__listener.suproc = 'cancelled'
         await self.__listener.onUploadError('Metada edit stopped by user!')
-
-
-    def eng(self):
-        return EngineStatus().STATUS_SPLIT_MERGE
