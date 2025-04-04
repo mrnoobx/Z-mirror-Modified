@@ -14,6 +14,7 @@ class MetadataStatus:
         self.__listener = listener
         self.message = listener.message
         self.engine = f'FFmpeg v{_eng_ver()}'
+        self.extra_details = self.__listener.extra_details
 
     def gid(self):
         return self.__gid
