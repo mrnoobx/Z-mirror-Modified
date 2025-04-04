@@ -1,4 +1,4 @@
-from bot import LOGGER
+from bot import LOGGER, subprocess_lock
 from bot.helper.ext_utils.bot_utils import get_readable_file_size, MirrorStatus, get_readable_time, async_to_sync
 from subprocess import run as frun
 from time import time
@@ -63,11 +63,13 @@ class MetadataStatus:
         return self
 
     async def cancel_download(self):
-        LOGGER.info(f'Cancelling metadata edit: {self.__name}')
-        if self.__listener.suproc is not None:
-            try:
+        LOGGER.info(f'Cancelling Metadata: {self.__name}')
+        async with subprocess_lock:
+            if (
+                self.__listener.suproc is not None
+                and self.__listener.suproc.returncode is None
+            ):
                 self.__listener.suproc.kill()
-            except:
-                pass
-        self.__listener.suproc = 'cancelled'
-        await self.__listener.onUploadError('Metadata edit stopped by user!')
+            else:
+                self.__listener.suproc = "cancelled"
+        await self.__listener.onUploadError('Metadata stopped by user!')
