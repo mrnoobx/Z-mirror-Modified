@@ -12,7 +12,6 @@ class MetadataStatus:
         self.__gid = gid
         self.__size = size
         self.__listener = listener
-        self.upload_details = listener.upload_details
         self.message = listener.message
         self.engine = f'FFmpeg v{_eng_ver()}'
 
