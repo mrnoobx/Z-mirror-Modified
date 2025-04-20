@@ -1,0 +1,31 @@
+BOT_TOKEN = "7881934453:AAH38A4dHvwn1hU8HMziaTlFeJ-lZFH4SmI" # Enter your telegram bot token
+OWNER_ID = "7442532306" # Enter your telegram user id
+TELEGRAM_API = "29382018" # Enter telegram API key
+TELEGRAM_HASH = "4734a726c04620c61ec0a28a1ae0d57f" # Enter telegram API hash
+DATABASE_URL = "mongodb+srv://mrnoobx:DAZCdTczVWyECi04@cluster0.sedgwxy.mongodb.net/?retryWrites=true&w=majority" 
+AUTHORIZED_CHATS = "-1002180300815" # 
+UPSTREAM_REPO = "https://github.com/mrnoobx/Z-mirror-Modified"
+UPSTREAM_BRANCH = "upstream"
+FSUB_IDS = "-1002310978225" # Enter channel id for force subscribe
+LOG_CHAT_ID = "-1002428562251" # Enter channel id for task logs
+DOWNLOAD_DIR = "/usr/src/app/Downloads/"
+DUMP_CHAT_ID = "-1002428562251" # Enter
+SEARCH_API_LINK = ""
+SEARCH_LIMIT = "20" # Enter only numbers
+SEARCH_PLUGINS = '["https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/piratebay.py",
+                   "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/limetorrents.py",
+                   "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/torlock.py",
+                   "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/torrentscsv.py",
+                   "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/eztv.py",
+                   "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/torrentproject.py",
+                   "https://raw.githubusercontent.com/MaurizioRicci/qBittorrent_search_engines/master/kickass_torrent.py",
+                   "https://raw.githubusercontent.com/MaurizioRicci/qBittorrent_search_engines/master/yts_am.py",
+                   "https://raw.githubusercontent.com/MadeOfMagicAndWires/qBit-plugins/master/engines/linuxtracker.py",
+                   "https://raw.githubusercontent.com/MadeOfMagicAndWires/qBit-plugins/master/engines/nyaasi.py",
+                   "https://raw.githubusercontent.com/LightDestory/qBittorrent-Search-Plugins/master/src/engines/ettv.py",
+                   "https://raw.githubusercontent.com/LightDestory/qBittorrent-Search-Plugins/master/src/engines/glotorrents.py",
+                   "https://raw.githubusercontent.com/LightDestory/qBittorrent-Search-Plugins/master/src/engines/thepiratebay.py",
+                   "https://raw.githubusercontent.com/v1k45/1337x-qBittorrent-search-plugin/master/leetx.py",
+                   "https://raw.githubusercontent.com/nindogo/qbtSearchScripts/master/magnetdl.py",
+                   "https://raw.githubusercontent.com/msagca/qbittorrent_plugins/main/uniondht.py",
+                   "https://raw.githubusercontent.com/khensolomon/leyts/master/yts.py"]'
